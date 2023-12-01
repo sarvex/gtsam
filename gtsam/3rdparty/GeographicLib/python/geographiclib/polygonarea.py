@@ -51,28 +51,28 @@ from geographiclib.accumulator import Accumulator
 class PolygonArea(object):
   """Area of a geodesic polygon"""
 
-  def _transit(lon1, lon2):
+  def _transit(self, lon2):
     """Count crossings of prime meridian for AddPoint."""
     # Return 1 or -1 if crossing prime meridian in east or west direction.
     # Otherwise return zero.
     # Compute lon12 the same way as Geodesic::Inverse.
-    lon1 = Math.AngNormalize(lon1)
+    self = Math.AngNormalize(self)
     lon2 = Math.AngNormalize(lon2)
-    lon12, _ = Math.AngDiff(lon1, lon2)
-    cross = (1 if lon1 <= 0 and lon2 > 0 and lon12 > 0
-             else (-1 if lon2 <= 0 and lon1 > 0 and lon12 < 0 else 0))
-    return cross
+    lon12, _ = Math.AngDiff(self, lon2)
+    return (1 if self <= 0 and lon2 > 0 and lon12 > 0 else
+            -1 if lon2 <= 0 and self > 0 and lon12 < 0 else 0)
   _transit = staticmethod(_transit)
 
-  def _transitdirect(lon1, lon2):
+  def _transitdirect(self, lon2):
     """Count crossings of prime meridian for AddEdge."""
     # We want to compute exactly
     #   int(floor(lon2 / 360)) - int(floor(lon1 / 360))
     # Since we only need the parity of the result we can use std::remquo but
     # this is buggy with g++ 4.8.3 and requires C++11.  So instead we do
-    lon1 = math.fmod(lon1, 720.0); lon2 = math.fmod(lon2, 720.0)
-    return ( (0 if ((lon2 >= 0 and lon2 < 360) or lon2 < -360) else 1) -
-             (0 if ((lon1 >= 0 and lon1 < 360) or lon1 < -360) else 1) )
+    self = math.fmod(self, 720.0)
+    lon2 = math.fmod(lon2, 720.0)
+    return (0 if ((lon2 >= 0 and lon2 < 360) or lon2 < -360) else
+            1) - (0 if self >= 0 and self < 360 or self < -360 else 1)
   _transitdirect = staticmethod(_transitdirect)
 
   def __init__(self, earth, polyline = False):
@@ -203,11 +203,10 @@ class PolygonArea(object):
         tempsum.Add( -self.area0 )
       elif tempsum.Sum() <= -self.area0/2:
         tempsum.Add(  self.area0 )
-    else:
-      if tempsum.Sum() >= self.area0:
-        tempsum.Add( -self.area0 )
-      elif tempsum.Sum() < 0:
-        tempsum.Add(  self.area0 )
+    elif tempsum.Sum() >= self.area0:
+      tempsum.Add( -self.area0 )
+    elif tempsum.Sum() < 0:
+      tempsum.Add(  self.area0 )
 
     area = 0.0 + tempsum.Sum()
     return self.num, perimeter, area
@@ -234,7 +233,8 @@ class PolygonArea(object):
 
     perimeter = self._perimetersum.Sum()
     tempsum = 0.0 if self.polyline else self._areasum.Sum()
-    crossings = self._crossings; num = self.num + 1
+    crossings = self._crossings
+    num = self.num + 1
     for i in ([0] if self.polyline else [0, 1]):
       _, s12, _, _, _, _, _, _, _, S12 = self.earth._GenInverse(
         self.lat1 if i == 0 else lat, self.lon1 if i == 0 else lon,
@@ -260,11 +260,10 @@ class PolygonArea(object):
         tempsum -= self.area0
       elif tempsum <= -self.area0/2:
         tempsum += self.area0
-    else:
-      if tempsum >= self.area0:
-        tempsum -= self.area0
-      elif tempsum < 0:
-        tempsum += self.area0
+    elif tempsum >= self.area0:
+      tempsum -= self.area0
+    elif tempsum < 0:
+      tempsum += self.area0
 
     area = 0.0 + tempsum
     return num, perimeter, area
@@ -314,11 +313,10 @@ class PolygonArea(object):
         tempsum -= self.area0
       elif tempsum <= -self.area0/2:
         tempsum += self.area0
-    else:
-      if tempsum >= self.area0:
-        tempsum -= self.area0
-      elif tempsum < 0:
-        tempsum += self.area0
+    elif tempsum >= self.area0:
+      tempsum -= self.area0
+    elif tempsum < 0:
+      tempsum += self.area0
 
     area = 0.0 + tempsum
     return num, perimeter, area

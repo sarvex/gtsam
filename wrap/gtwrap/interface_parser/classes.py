@@ -67,13 +67,7 @@ class Method:
         return self.name
 
     def __repr__(self) -> str:
-        return "Method: {} {} {}({}){}".format(
-            self.template,
-            self.return_type,
-            self.name,
-            self.args,
-            self.is_const,
-        )
+        return f"Method: {self.template} {self.return_type} {self.name}({self.args}){self.is_const}"
 
 
 class StaticMethod:
@@ -113,7 +107,7 @@ class StaticMethod:
         self.parent = parent
 
     def __repr__(self) -> str:
-        return "static {} {}{}".format(self.return_type, self.name, self.args)
+        return f"static {self.return_type} {self.name}{self.args}"
 
     def to_cpp(self) -> str:
         """Generate the C++ code for wrapping."""
@@ -146,7 +140,7 @@ class Constructor:
         self.parent = parent
 
     def __repr__(self) -> str:
-        return "Constructor: {}{}".format(self.name, self.args)
+        return f"Constructor: {self.name}{self.args}"
 
 
 class Operator:
@@ -189,27 +183,20 @@ class Operator:
 
         # Check for valid unary operators
         if self.is_unary and self.operator not in ('+', '-'):
-            raise ValueError("Invalid unary operator {} used for {}".format(
-                self.operator, self))
+            raise ValueError(f"Invalid unary operator {self.operator} used for {self}")
 
         # Check that number of arguments are either 0 or 1
-        assert 0 <= len(args) < 2, \
-            "Operator overload should be at most 1 argument, " \
-                "{} arguments provided".format(len(args))
+        assert (
+            0 <= len(args) < 2
+        ), f"Operator overload should be at most 1 argument, {len(args)} arguments provided"
 
         # Check to ensure arg and return type are the same.
         if len(args) == 1 and self.operator not in ("()", "[]"):
             assert args.list()[0].ctype.typename.name == return_type.type1.typename.name, \
-                "Mixed type overloading not supported. Both arg and return type must be the same."
+                    "Mixed type overloading not supported. Both arg and return type must be the same."
 
     def __repr__(self) -> str:
-        return "Operator: {}{}{}({}) {}".format(
-            self.return_type,
-            self.name,
-            self.operator,
-            self.args,
-            self.is_const,
-        )
+        return f"Operator: {self.return_type}{self.name}{self.operator}({self.args}) {self.is_const}"
 
 
 class Class:
@@ -296,11 +283,6 @@ class Class:
             if isinstance(parent_class, Iterable):
                 parent_class = parent_class[0]  # type: ignore
 
-            # If the base class is a TemplatedType,
-            # we want the instantiated Typename
-            if isinstance(parent_class, TemplatedType):
-                pass  # Note: this must get handled in InstantiatedClass
-
             self.parent_class = parent_class
         else:
             self.parent_class = ''  # type: ignore
@@ -317,8 +299,7 @@ class Class:
         # Make sure ctors' names and class name are the same.
         for ctor in self.ctors:
             if ctor.name != self.name:
-                raise ValueError("Error in constructor name! {} != {}".format(
-                    ctor.name, self.name))
+                raise ValueError(f"Error in constructor name! {ctor.name} != {self.name}")
 
         for ctor in self.ctors:
             ctor.parent = self

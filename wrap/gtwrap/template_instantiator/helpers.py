@@ -21,11 +21,15 @@ def is_scoped_template(template_typenames: Sequence[str],
     and if so, return what template from `template_typenames` and
     the corresponding index matches the scoped template correctly.
     """
-    for idx, template in enumerate(template_typenames):
-        if "::" in str_arg_typename and \
-            template in str_arg_typename.split("::"):
-            return template, idx
-    return False, -1
+    return next(
+        (
+            (template, idx)
+            for idx, template in enumerate(template_typenames)
+            if "::" in str_arg_typename
+            and template in str_arg_typename.split("::")
+        ),
+        (False, -1),
+    )
 
 
 def instantiate_type(
@@ -209,7 +213,7 @@ def instantiate_name(original_name: str,
         # Using `capitalize` on the complete name causes other caps to be lower case
         instantiated_names.append(name.replace(name[0], name[0].capitalize()))
 
-    return "{}{}".format(original_name, "".join(instantiated_names))
+    return f'{original_name}{"".join(instantiated_names)}'
 
 
 class InstantiationHelper:

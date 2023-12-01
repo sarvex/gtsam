@@ -49,8 +49,7 @@ def find_sub_namespace(namespace: "Namespace",
 
     res = []
     for found_namespace in found_namespaces:
-        ns = find_sub_namespace(found_namespace, str_namespaces[1:])
-        if ns:
+        if ns := find_sub_namespace(found_namespace, str_namespaces[1:]):
             res += ns
     return res
 
@@ -86,10 +85,7 @@ class Namespace:
     @staticmethod
     def from_parse_result(t: ParseResults):
         """Return the result of parsing."""
-        if t.content:
-            content = t.content.asList()
-        else:
-            content = []
+        content = t.content.asList() if t.content else []
         return Namespace(t.name, content)
 
     def find_class_or_function(
@@ -105,12 +101,9 @@ class Namespace:
                                  if isinstance(c, (Class, GlobalFunction, ForwardDeclaration)))
             res += [c for c in classes_and_funcs if c.name == typename.name]
         if not res:
-            raise ValueError("Cannot find class {} in module!".format(
-                typename.name))
+            raise ValueError(f"Cannot find class {typename.name} in module!")
         elif len(res) > 1:
-            raise ValueError(
-                "Found more than one classes {} in module!".format(
-                    typename.name))
+            raise ValueError(f"Found more than one classes {typename.name} in module!")
         else:
             return res[0]
 
@@ -122,7 +115,7 @@ class Namespace:
             return self.parent.top_level()
 
     def __repr__(self) -> str:
-        return "Namespace: {}\n\t{}".format(self.name, self.content)
+        return f"Namespace: {self.name}\n\t{self.content}"
 
     def full_namespaces(self) -> List["Namespace"]:
         """Get the full namespace list."""

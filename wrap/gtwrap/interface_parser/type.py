@@ -87,22 +87,15 @@ class Typename:
 
     def to_cpp(self) -> str:
         """Generate the C++ code for wrapping."""
-        if self.instantiations:
-            cpp_name = self.name + "<{}>".format(", ".join(
-                [inst.to_cpp() for inst in self.instantiations]))
-        else:
-            cpp_name = self.name
-        return '{}{}{}'.format(
-            "::".join(self.namespaces),
-            "::" if self.namespaces else "",
-            cpp_name,
+        cpp_name = (
+            f'{self.name}<{", ".join([inst.to_cpp() for inst in self.instantiations])}>'
+            if self.instantiations
+            else self.name
         )
+        return f'{"::".join(self.namespaces)}{"::" if self.namespaces else ""}{cpp_name}'
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, Typename):
-            return str(self) == str(other)
-        else:
-            return False
+        return str(self) == str(other) if isinstance(other, Typename) else False
 
     def __ne__(self, other) -> bool:
         res = self.__eq__(other)
@@ -213,7 +206,8 @@ class Type:
         return "{is_const}{self.typename}{is_ptr_or_ref}".format(
             self=self,
             is_const="const " if self.is_const else "",
-            is_ptr_or_ref=" " + is_ptr_or_ref if is_ptr_or_ref else "")
+            is_ptr_or_ref=f" {is_ptr_or_ref}" if is_ptr_or_ref else "",
+        )
 
     def to_cpp(self) -> str:
         """
@@ -307,9 +301,6 @@ class TemplatedType:
             typename = "{typename}*".format(typename=typename)
         elif self.is_ref or self.typename.name in ["Matrix", "Vector"]:
             typename = typename = "{typename}&".format(typename=typename)
-        else:
-            pass
-
         return ("{const}{typename}".format(
             const="const " if
             (self.is_const

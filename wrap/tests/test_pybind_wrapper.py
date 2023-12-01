@@ -51,7 +51,7 @@ class TestWrap(unittest.TestCase):
             module_template=module_template,
             use_boost_serialization=use_boost_serialization)
 
-        output = osp.join(self.TEST_DIR, output_dir, module_name + ".cpp")
+        output = osp.join(self.TEST_DIR, output_dir, f"{module_name}.cpp")
 
         if not osp.exists(osp.join(self.TEST_DIR, output_dir)):
             os.mkdir(osp.join(self.TEST_DIR, output_dir))

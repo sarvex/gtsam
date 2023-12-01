@@ -56,18 +56,15 @@ class InstantiatedMethod(parser.Method):
 
     def to_cpp(self):
         """Generate the C++ code for wrapping."""
-        if self.original.template:
-            # to_cpp will handle all the namespacing and templating
-            instantiation_list = [x.to_cpp() for x in self.instantiations]
+        if not self.original.template:
+            return self.original.name
+        # to_cpp will handle all the namespacing and templating
+        instantiation_list = [x.to_cpp() for x in self.instantiations]
             # now can simply combine the instantiations, separated by commas
-            ret = "{}<{}>".format(self.original.name,
-                                  ",".join(instantiation_list))
-        else:
-            ret = self.original.name
-        return ret
+        return f'{self.original.name}<{",".join(instantiation_list)}>'
 
     def __repr__(self):
-        return "Instantiated {}".format(super().__repr__())
+        return f"Instantiated {super().__repr__()}"
 
 
 class InstantiatedStaticMethod(parser.StaticMethod):
@@ -110,15 +107,12 @@ class InstantiatedStaticMethod(parser.StaticMethod):
 
     def to_cpp(self):
         """Generate the C++ code for wrapping."""
-        if self.original.template:
-            # to_cpp will handle all the namespacing and templating
-            instantiation_list = [x.to_cpp() for x in self.instantiations]
+        if not self.original.template:
+            return self.original.name
+        # to_cpp will handle all the namespacing and templating
+        instantiation_list = [x.to_cpp() for x in self.instantiations]
             # now can simply combine the instantiations, separated by commas
-            ret = "{}<{}>".format(self.original.name,
-                                  ",".join(instantiation_list))
-        else:
-            ret = self.original.name
-        return ret
+        return f'{self.original.name}<{",".join(instantiation_list)}>'
 
     def __repr__(self):
-        return "Instantiated {}".format(super().__repr__())
+        return f"Instantiated {super().__repr__()}"

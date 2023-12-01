@@ -50,8 +50,8 @@ def make_convergence_plot(name, p_values, times, costs, iter=10):
     max_cost = np.mean(np.array(heapq.nlargest(iter, costs)))
     # calculate mean costs for each p value
     p_values = list(dict(Counter(p_values)).keys())
-    # make sure the iter number 
-    iter = int(len(times)/len(p_values))
+    # make sure the iter number
+    iter = len(times) // len(p_values)
     p_mean_cost = [np.mean(np.array(costs[i*iter:(i+1)*iter])) for i in range(len(p_values))]
     p_max = p_values[p_mean_cost.index(max(p_mean_cost))]
     # print(p_mean_cost)
@@ -72,7 +72,7 @@ def make_convergence_plot(name, p_values, times, costs, iter=10):
     # calculate the convergence rate for each p_value
     p_success_rates = []
     if p_mean_cost[0] >= 0.95*np.mean(np.array(costs)) and p_mean_cost[0] <= 1.05*np.mean(np.array(costs)):
-        p_success_rates = [ 1.0 for p in p_values]
+        p_success_rates = [1.0 for _ in p_values]
     else:
         for p in p_values:
             if p > p_max:
@@ -108,7 +108,7 @@ def make_eigen_and_bound_plot(name, p_values, times1, costPs, cost3s, times2, mi
     
     if dict(Counter(p_values))[5] != 1:
         p_values = list(dict(Counter(p_values)).keys())
-        iter = int(len(times1)/len(p_values))
+        iter = len(times1) // len(p_values)
         p_mean_times1 = [np.mean(np.array(times1[i*iter:(i+1)*iter])) for i in range(len(p_values))]
         p_mean_times2 = [np.mean(np.array(times2[i*iter:(i+1)*iter])) for i in range(len(p_values))]
         print("p_values \n", p_values)
@@ -163,25 +163,22 @@ parser.add_argument("path")
 args = parser.parse_args()
 
 
-file_path = []
 domain = os.path.abspath(args.path)
-for info in os.listdir(args.path):
-    file_path.append(os.path.join(domain, info))
+file_path = [os.path.join(domain, info) for info in os.listdir(args.path)]
 file_path.sort()
 print(file_path)
 
 
 # name of all the plots
-names = {}
-names[0] = 'tinyGrid3D vertex = 9, edge = 11'
-names[1] = 'smallGrid3D vertex = 125, edge = 297'
-names[2] = 'parking-garage vertex = 1661, edge = 6275'
-names[3] = 'sphere2500 vertex = 2500, edge = 4949'
-# names[4] = 'sphere_bignoise vertex = 2200, edge = 8647'
-names[5] = 'torus3D vertex = 5000, edge = 9048'
-names[6] = 'cubicle vertex = 5750, edge = 16869'
-names[7] = 'rim vertex = 10195, edge = 29743'
-
+names = {
+    0: 'tinyGrid3D vertex = 9, edge = 11',
+    1: 'smallGrid3D vertex = 125, edge = 297',
+    2: 'parking-garage vertex = 1661, edge = 6275',
+    3: 'sphere2500 vertex = 2500, edge = 4949',
+    5: 'torus3D vertex = 5000, edge = 9048',
+    6: 'cubicle vertex = 5750, edge = 16869',
+    7: 'rim vertex = 10195, edge = 29743',
+}
 # Parse CSV file
 for key, name in names.items():
     print(key, name)
@@ -189,10 +186,10 @@ for key, name in names.items():
     # find  according file to process
     name_file = None
     for path in file_path:
-        if name[0:3] in path:
+        if name[:3] in path:
             name_file = path
-    if name_file == None:
-        print("The file %s is not in the path" % name)
+    if name_file is None:
+        print(f"The file {name} is not in the path")
         continue
 
     p_values, times1, costPs, cost3s, times2, min_eigens, subounds = [],[],[],[],[],[],[]

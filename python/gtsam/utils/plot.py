@@ -42,11 +42,7 @@ def set_axes_equal(fignum: int) -> None:
       fignum: An integer representing the figure number for Matplotlib.
     """
     fig = plt.figure(fignum)
-    if not fig.axes:
-        ax = fig.add_subplot(projection='3d')
-    else:
-        ax = fig.axes[0]
-
+    ax = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     limits = np.array([
         ax.get_xlim3d(),
         ax.get_ylim3d(),
@@ -332,10 +328,7 @@ def plot_point3(
 
     """
     fig = plt.figure(fignum)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     plot_point3_on_axes(axes, point, linespec, P)
 
     axes.set_xlabel(axis_labels[0])
@@ -373,11 +366,7 @@ def plot_3d_points(fignum,
     for key in keys:
         try:
             point = values.atPoint3(key)
-            if marginals is not None:
-                covariance = marginals.marginalCovariance(key)
-            else:
-                covariance = None
-
+            covariance = None if marginals is None else marginals.marginalCovariance(key)
             fig = plot_point3(fignum,
                               point,
                               linespec,
@@ -457,11 +446,7 @@ def plot_pose3(
     """
     # get figure object
     fig = plt.figure(fignum)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
-
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     plot_pose3_on_axes(axes, pose, P=P, axis_length=axis_length)
 
     axes.set_xlabel(axis_labels[0])
@@ -492,11 +477,7 @@ def plot_trajectory(
         axis_labels (iterable[string]): List of axis labels to set.
     """
     fig = plt.figure(fignum)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
-
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     axes.set_xlabel(axis_labels[0])
     axes.set_ylabel(axis_labels[1])
     axes.set_zlabel(axis_labels[2])
@@ -505,11 +486,7 @@ def plot_trajectory(
     poses = gtsam.utilities.allPose2s(values)
     for key in poses.keys():
         pose = poses.atPose2(key)
-        if marginals:
-            covariance = marginals.marginalCovariance(key)
-        else:
-            covariance = None
-
+        covariance = marginals.marginalCovariance(key) if marginals else None
         plot_pose2_on_axes(axes,
                            pose,
                            covariance=covariance,
@@ -519,11 +496,7 @@ def plot_trajectory(
     poses = gtsam.utilities.allPose3s(values)
     for key in poses.keys():
         pose = poses.atPose3(key)
-        if marginals:
-            covariance = marginals.marginalCovariance(key)
-        else:
-            covariance = None
-
+        covariance = marginals.marginalCovariance(key) if marginals else None
         plot_pose3_on_axes(axes, pose, P=covariance, axis_length=scale)
 
     fig.suptitle(title)
@@ -550,11 +523,7 @@ def plot_incremental_trajectory(fignum: int,
             Used to create animation effect.
     """
     fig = plt.figure(fignum)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
-
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     poses = gtsam.utilities.allPose3s(values)
     keys = poses.keys()
 

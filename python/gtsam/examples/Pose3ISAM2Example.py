@@ -34,10 +34,7 @@ def report_on_progress(graph: gtsam.NonlinearFactorGraph, current_estimate: gtsa
 
     # Plot the newly updated iSAM2 inference.
     fig = plt.figure(0)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     plt.cla()
 
     i = 1
@@ -175,12 +172,9 @@ def Pose3_ISAM2_example():
         # Compute the noisy odometry transformation according to the xyz translation and roll-pitch-yaw rotation.
         noisy_tf = gtsam.Pose3(gtsam.Rot3.RzRyRx(noisy_odometry[:3]), noisy_odometry[3:6].reshape(-1,1))
 
-        # Determine if there is loop closure based on the odometry measurement and the previous estimate of the state.
-        loop = determine_loop_closure(noisy_tf, current_estimate, i, xyz_tol=18, rot_tol=30)
-
-        # Add a binary factor in between two existing states if loop closure is detected.
-        # Otherwise, add a binary factor between a newly observed state and the previous state.
-        if loop:
+        if loop := determine_loop_closure(
+            noisy_tf, current_estimate, i, xyz_tol=18, rot_tol=30
+        ):
             graph.push_back(gtsam.BetweenFactorPose3(i + 1, loop, noisy_tf, ODOMETRY_NOISE))
         else:
             graph.push_back(gtsam.BetweenFactorPose3(i + 1, i + 2, noisy_tf, ODOMETRY_NOISE))

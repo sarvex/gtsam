@@ -45,7 +45,6 @@ class GroundTruth:
         print("Points: ", len(self.points))
         for point in self.points:
             print("\t", point)
-        pass
 
 
 class Data:

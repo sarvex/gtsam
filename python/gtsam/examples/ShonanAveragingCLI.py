@@ -74,10 +74,10 @@ def run(args):
     # Get input file
     if args.input_file:
         input_file = args.input_file
+    elif args.named_dataset == "":
+        raise ValueError(
+            "You must either specify a named dataset or an input file")
     else:
-        if args.named_dataset == "":
-            raise ValueError(
-                "You must either specify a named dataset or an input file")
         input_file = gtsam.findExampleDataFile(args.named_dataset)
 
     if args.dimension == 2:

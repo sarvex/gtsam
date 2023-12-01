@@ -409,8 +409,7 @@ def test_accessors():
 
 
 def test_accessor_moves():
-    inc_refs = m.accessor_moves()
-    if inc_refs:
+    if inc_refs := m.accessor_moves():
         assert inc_refs == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
     else:
         pytest.skip("Not defined: PYBIND11_HANDLE_REF_DEBUG")
@@ -666,11 +665,11 @@ def test_memoryview_from_memory():
 def test_builtin_functions():
     assert m.get_len(list(range(42))) == 42
     with pytest.raises(TypeError) as exc_info:
-        m.get_len(i for i in range(42))
-    assert str(exc_info.value) in [
+        m.get_len(iter(range(42)))
+    assert str(exc_info.value) in {
         "object of type 'generator' has no len()",
         "'generator' has no length",
-    ]  # PyPy
+    }
 
 
 def test_isinstance_string_types():

@@ -14,8 +14,7 @@ from gtsam import Cal3_S2, Point3, Pose3
 
 
 def createPoints() -> List[Point3]:
-    # Create the set of ground-truth landmarks
-    points = [
+    return [
         Point3(10.0, 10.0, 10.0),
         Point3(-10.0, 10.0, 10.0),
         Point3(-10.0, -10.0, 10.0),
@@ -25,7 +24,6 @@ def createPoints() -> List[Point3]:
         Point3(-10.0, -10.0, -10.0),
         Point3(10.0, -10.0, -10.0),
     ]
-    return points
 
 
 def createPoses(K: Cal3_S2) -> List[Pose3]:

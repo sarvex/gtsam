@@ -53,17 +53,13 @@ class InstantiatedGlobalFunction(parser.GlobalFunction):
 
     def to_cpp(self):
         """Generate the C++ code for wrapping."""
-        if self.original.template:
-            instantiated_names = [
-                "::".join(inst.namespaces + [inst.instantiated_name()])
-                for inst in self.instantiations
-            ]
-            ret = "{}<{}>".format(self.original.name,
-                                  ",".join(instantiated_names))
-        else:
-            ret = self.original.name
-        return ret
+        if not self.original.template:
+            return self.original.name
+        instantiated_names = [
+            "::".join(inst.namespaces + [inst.instantiated_name()])
+            for inst in self.instantiations
+        ]
+        return f'{self.original.name}<{",".join(instantiated_names)}>'
 
     def __repr__(self):
-        return "Instantiated {}".format(
-            super(InstantiatedGlobalFunction, self).__repr__())
+        return f"Instantiated {super(InstantiatedGlobalFunction, self).__repr__()}"

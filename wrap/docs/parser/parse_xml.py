@@ -98,14 +98,11 @@ def init_doc(file_path):
 
 
 def find_first_element_with_tag(tree, tag):
-    if tree.getroot().tag == tag:
-        return tree.getroot()
-
-    return tree.find('.//{}'.format(tag))
+    return tree.getroot() if tree.getroot().tag == tag else tree.find(f'.//{tag}')
 
 
 def find_all_elements(tree, name, tag):
-    return tree.find('.//{}'.format(tag))
+    return tree.find(f'.//{tag}')
 
 
 def find_method_element_text(method, name):

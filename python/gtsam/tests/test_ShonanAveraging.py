@@ -201,12 +201,10 @@ class TestShonanAveraging(GtsamTestCase):
 
     def test_measurements3(self):
         """Create from Measurements."""
-        measurements = []
         unit3 = gtsam.noiseModel.Unit.Create(3)
         m01 = BinaryMeasurementRot3(0, 1, Rot3.Yaw(math.radians(90)), unit3)
         m12 = BinaryMeasurementRot3(1, 2, Rot3.Yaw(math.radians(90)), unit3)
-        measurements.append(m01)
-        measurements.append(m12)
+        measurements = [m01, m12]
         obj = ShonanAveraging3(measurements)
         self.assertIsInstance(obj, ShonanAveraging3)
         initial = obj.initializeRandomly()

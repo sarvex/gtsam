@@ -65,12 +65,7 @@ class PreintegrationExample:
         self.labels = list('xyz')
         self.colors = list('rgb')
 
-        if params:
-            self.params = params
-        else:
-            # Default params with simple gravity constant
-            self.params = self.defaultParams(g=GRAVITY)
-
+        self.params = params if params else self.defaultParams(g=GRAVITY)
         if bias is not None:
             self.actualBias = bias
         else:
@@ -102,21 +97,21 @@ class PreintegrationExample:
             ax = self.axes[0][i]
             ax.scatter(t, omega_b[i], color='k', marker='.')
             ax.scatter(t, measuredOmega[i], color=color, marker='.')
-            ax.set_xlabel('angular velocity ' + label)
+            ax.set_xlabel(f'angular velocity {label}')
 
         # plot acceleration in nav
         acceleration_n = self.scenario.acceleration_n(t)
         for i, (label, color) in enumerate(zip(self.labels, self.colors)):
             ax = self.axes[1][i]
             ax.scatter(t, acceleration_n[i], color=color, marker='.')
-            ax.set_xlabel('acceleration in nav ' + label)
+            ax.set_xlabel(f'acceleration in nav {label}')
 
         # plot acceleration in body
         acceleration_b = self.scenario.acceleration_b(t)
         for i, (label, color) in enumerate(zip(self.labels, self.colors)):
             ax = self.axes[2][i]
             ax.scatter(t, acceleration_b[i], color=color, marker='.')
-            ax.set_xlabel('acceleration in body ' + label)
+            ax.set_xlabel(f'acceleration in body {label}')
 
         # plot actual specific force, as well as corrupted
         actual = self.runner.actualSpecificForce(t)
@@ -124,7 +119,7 @@ class PreintegrationExample:
             ax = self.axes[3][i]
             ax.scatter(t, actual[i], color='k', marker='.')
             ax.scatter(t, measuredAcc[i], color=color, marker='.')
-            ax.set_xlabel('specific force ' + label)
+            ax.set_xlabel(f'specific force {label}')
 
     def plotGroundTruthPose(self,
                             t: float,

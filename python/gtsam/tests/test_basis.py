@@ -44,8 +44,7 @@ class TestBasis(GtsamTestCase):
         data = {x: f(x) for x in self.x}
         fit = fitter(data, self.noise, self.N)
         coeff = fit.parameters()
-        interpy = self.evaluate(basis, coeff, self.interpx)
-        return interpy
+        return self.evaluate(basis, coeff, self.interpx)
 
     def test_fit_basis_fourier(self):
         """Fit a Fourier basis."""

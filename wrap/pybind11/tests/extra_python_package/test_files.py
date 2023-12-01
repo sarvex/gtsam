@@ -126,7 +126,7 @@ local_sdist_files = {
 
 
 def read_tz_file(tar: tarfile.TarFile, name: str) -> bytes:
-    start = tar.getnames()[0] + "/"
+    start = f"{tar.getnames()[0]}/"
     inner_file = tar.extractfile(tar.getmember(f"{start}{name}"))
     assert inner_file
     with contextlib.closing(inner_file) as f:
@@ -147,7 +147,7 @@ def test_build_sdist(monkeypatch, tmpdir):
     (sdist,) = tmpdir.visit("*.tar.gz")
 
     with tarfile.open(str(sdist), "r:gz") as tar:
-        start = tar.getnames()[0] + "/"
+        start = f"{tar.getnames()[0]}/"
         version = start[9:-1]
         simpler = {n.split("/", 1)[-1] for n in tar.getnames()[1:]}
 
@@ -197,7 +197,7 @@ def test_build_global_dist(monkeypatch, tmpdir):
     (sdist,) = tmpdir.visit("*.tar.gz")
 
     with tarfile.open(str(sdist), "r:gz") as tar:
-        start = tar.getnames()[0] + "/"
+        start = f"{tar.getnames()[0]}/"
         version = start[16:-1]
         simpler = {n.split("/", 1)[-1] for n in tar.getnames()[1:]}
 

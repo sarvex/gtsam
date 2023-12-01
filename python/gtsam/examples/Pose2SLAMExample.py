@@ -55,7 +55,7 @@ def main():
     graph.add(
         gtsam.BetweenFactorPose2(5, 2, gtsam.Pose2(2, 0, math.pi / 2),
                                  ODOMETRY_NOISE))
-    print("\nFactor Graph:\n{}".format(graph))  # print
+    print(f"\nFactor Graph:\n{graph}")
 
     # 3. Create the data structure to hold the initial_estimate estimate to the
     # solution. For illustrative purposes, these have been deliberately set to incorrect values
@@ -65,7 +65,7 @@ def main():
     initial_estimate.insert(3, gtsam.Pose2(4.1, 0.1, math.pi / 2))
     initial_estimate.insert(4, gtsam.Pose2(4.0, 2.0, math.pi))
     initial_estimate.insert(5, gtsam.Pose2(2.1, 2.1, -math.pi / 2))
-    print("\nInitial Estimate:\n{}".format(initial_estimate))  # print
+    print(f"\nInitial Estimate:\n{initial_estimate}")
 
     # 4. Optimize the initial values using a Gauss-Newton nonlinear optimizer
     # The optimizer accepts an optional set of configuration parameters,
@@ -82,13 +82,12 @@ def main():
     optimizer = gtsam.GaussNewtonOptimizer(graph, initial_estimate, parameters)
     # ... and optimize
     result = optimizer.optimize()
-    print("Final Result:\n{}".format(result))
+    print(f"Final Result:\n{result}")
 
     # 5. Calculate and print marginal covariances for all variables
     marginals = gtsam.Marginals(graph, result)
     for i in range(1, 6):
-        print("X{} covariance:\n{}\n".format(i,
-                                             marginals.marginalCovariance(i)))
+        print(f"X{i} covariance:\n{marginals.marginalCovariance(i)}\n")
 
     for i in range(1, 6):
         gtsam_plot.plot_pose2(0, result.atPose2(i), 0.5,

@@ -65,7 +65,7 @@ def main():
     print("final error = ", graph.error(result))
 
     if args.output is None:
-        print("Final Result:\n{}".format(result))
+        print(f"Final Result:\n{result}")
     else:
         outputFile = args.output
         print("Writing results to file: ", outputFile)

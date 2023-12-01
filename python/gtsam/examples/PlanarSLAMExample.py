@@ -60,7 +60,7 @@ def main():
                                    MEASUREMENT_NOISE))
 
     # Print graph
-    print("Factor Graph:\n{}".format(graph))
+    print(f"Factor Graph:\n{graph}")
 
     # Create (deliberately inaccurate) initial estimate
     initial_estimate = gtsam.Values()
@@ -71,7 +71,7 @@ def main():
     initial_estimate.insert(L2, gtsam.Point2(4.10, 1.80))
 
     # Print
-    print("Initial Estimate:\n{}".format(initial_estimate))
+    print(f"Initial Estimate:\n{initial_estimate}")
 
     # Optimize using Levenberg-Marquardt optimization. The optimizer
     # accepts an optional set of configuration parameters, controlling
@@ -83,14 +83,13 @@ def main():
     optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial_estimate,
                                                   params)
     result = optimizer.optimize()
-    print("\nFinal Result:\n{}".format(result))
+    print(f"\nFinal Result:\n{result}")
 
     # Calculate and print marginal covariances for all variables
     marginals = gtsam.Marginals(graph, result)
     for (key, s) in [(X1, "X1"), (X2, "X2"), (X3, "X3"), (L1, "L1"),
                      (L2, "L2")]:
-        print("{} covariance:\n{}\n".format(s,
-                                            marginals.marginalCovariance(key)))
+        print(f"{s} covariance:\n{marginals.marginalCovariance(key)}\n")
 
 
 if __name__ == "__main__":

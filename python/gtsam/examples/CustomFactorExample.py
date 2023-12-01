@@ -23,9 +23,7 @@ def simulate_car() -> List[float]:
     x0 = 0
     dt = 0.25  # 4 Hz, typical GPS
     v = 144 * 1000 / 3600  # 144 km/hour = 90mph, pretty fast
-    x = [x0 + v * dt * i for i in range(5)]
-
-    return x
+    return [x0 + v * dt * i for i in range(5)]
 
 
 def error_gps(measurement: np.ndarray, this: gtsam.CustomFactor,

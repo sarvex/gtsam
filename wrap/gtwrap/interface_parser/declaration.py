@@ -30,7 +30,7 @@ class Include:
         self.parent = parent
 
     def __repr__(self) -> str:
-        return "#include <{}>".format(self.header)
+        return f"#include <{self.header}>"
 
 
 class ForwardDeclaration:
@@ -49,11 +49,7 @@ class ForwardDeclaration:
                  parent: str = ''):
         self.name = typename.name
         self.typename = typename
-        if parent_type:
-            self.parent_type = parent_type
-        else:
-            self.parent_type = ''
-
+        self.parent_type = parent_type if parent_type else ''
         self.is_virtual = is_virtual
         self.parent = parent
 
@@ -62,4 +58,4 @@ class ForwardDeclaration:
         return collect_namespaces(self)
 
     def __repr__(self) -> str:
-        return "ForwardDeclaration: {} {}".format(self.is_virtual, self.name)
+        return f"ForwardDeclaration: {self.is_virtual} {self.name}"

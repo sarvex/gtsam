@@ -465,16 +465,16 @@ class PlanimeterTest(unittest.TestCase):
   polygon = Geodesic.WGS84.Polygon(False)
   polyline = Geodesic.WGS84.Polygon(True)
 
-  def Planimeter(points):
+  def Planimeter(self):
     PlanimeterTest.polygon.Clear()
-    for p in points:
+    for p in self:
       PlanimeterTest.polygon.AddPoint(p[0], p[1])
     return PlanimeterTest.polygon.Compute(False, True)
   Planimeter = staticmethod(Planimeter)
 
-  def PolyLength(points):
+  def PolyLength(self):
     PlanimeterTest.polyline.Clear()
-    for p in points:
+    for p in self:
       PlanimeterTest.polyline.AddPoint(p[0], p[1])
     return PlanimeterTest.polyline.Compute(False, True)
   PolyLength = staticmethod(PolyLength)

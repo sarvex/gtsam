@@ -63,7 +63,7 @@ class TestCal3Unified(GtsamTestCase):
         r = np.linalg.norm([x, y, z])
         # Note: 2*tan(atan2(x, z)/2) = 2*x/(z+sqrt(x^2+z^2))
         self.assertAlmostEqual(2*np.tan(np.arctan2(x, z)/2), 2*x/(z+r))
-        perspective_pt = self.obj_point[0:2]/self.obj_point[2]
+        perspective_pt = self.obj_point[:2] / self.obj_point[2]
         distorted_pt = self.stereographic.uncalibrate(perspective_pt)
         rectified_pt = self.stereographic.calibrate(distorted_pt)
         self.gtsamAssertEquals(distorted_pt, self.img_point)

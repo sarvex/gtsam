@@ -138,12 +138,13 @@ def Pose2SLAM_ISAM2_example():
         # Obtain the noisy odometry that is received by the robot and corrupted by gaussian noise.
         noisy_odom_x, noisy_odom_y, noisy_odom_theta = odometry_measurements[i]
 
-        # Determine if there is loop closure based on the odometry measurement and the previous estimate of the state.
-        loop = determine_loop_closure(odometry_measurements[i], current_estimate, i, xy_tol=0.8, theta_tol=25)
-
-        # Add a binary factor in between two existing states if loop closure is detected.
-        # Otherwise, add a binary factor between a newly observed state and the previous state.
-        if loop:
+        if loop := determine_loop_closure(
+            odometry_measurements[i],
+            current_estimate,
+            i,
+            xy_tol=0.8,
+            theta_tol=25,
+        ):
             graph.push_back(gtsam.BetweenFactorPose2(i + 1, loop, 
                 gtsam.Pose2(noisy_odom_x, noisy_odom_y, noisy_odom_theta), ODOMETRY_NOISE))
         else:
@@ -169,7 +170,7 @@ def Pose2SLAM_ISAM2_example():
     i = 1
     for i in range(1, len(true_odometry)+1):
         print(f"X{i} covariance:\n{marginals.marginalCovariance(i)}\n")
-    
+
     plt.ioff()
     plt.show()
 

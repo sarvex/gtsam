@@ -39,7 +39,7 @@ def main():
     # Create odometry (Between) factors between consecutive poses
     graph.add(gtsam.BetweenFactorPose2(1, 2, odometry, ODOMETRY_NOISE))
     graph.add(gtsam.BetweenFactorPose2(2, 3, odometry, ODOMETRY_NOISE))
-    print("\nFactor Graph:\n{}".format(graph))
+    print(f"\nFactor Graph:\n{graph}")
 
     # Create the data structure to hold the initialEstimate estimate to the solution
     # For illustrative purposes, these have been deliberately set to incorrect values
@@ -47,19 +47,18 @@ def main():
     initial.insert(1, gtsam.Pose2(0.5, 0.0, 0.2))
     initial.insert(2, gtsam.Pose2(2.3, 0.1, -0.2))
     initial.insert(3, gtsam.Pose2(4.1, 0.1, 0.1))
-    print("\nInitial Estimate:\n{}".format(initial))
+    print(f"\nInitial Estimate:\n{initial}")
 
     # optimize using Levenberg-Marquardt optimization
     params = gtsam.LevenbergMarquardtParams()
     optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial, params)
     result = optimizer.optimize()
-    print("\nFinal Result:\n{}".format(result))
+    print(f"\nFinal Result:\n{result}")
 
     # 5. Calculate and print marginal covariances for all variables
     marginals = gtsam.Marginals(graph, result)
     for i in range(1, 4):
-        print("X{} covariance:\n{}\n".format(i,
-                                             marginals.marginalCovariance(i)))
+        print(f"X{i} covariance:\n{marginals.marginalCovariance(i)}\n")
 
     for i in range(1, 4):
         gtsam_plot.plot_pose2(0, result.atPose2(i), 0.5,

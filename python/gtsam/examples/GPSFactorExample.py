@@ -38,19 +38,19 @@ def main():
     # Add GPS factors
     gps = gtsam.Point3(lat0, lon0, h0)
     graph.add(gtsam.GPSFactor(1, gps, GPS_NOISE))
-    print("\nFactor Graph:\n{}".format(graph))
+    print(f"\nFactor Graph:\n{graph}")
 
     # Create the data structure to hold the initialEstimate estimate to the solution
     # For illustrative purposes, these have been deliberately set to incorrect values
     initial = gtsam.Values()
     initial.insert(1, gtsam.Pose3())
-    print("\nInitial Estimate:\n{}".format(initial))
+    print(f"\nInitial Estimate:\n{initial}")
 
     # optimize using Levenberg-Marquardt optimization
     params = gtsam.LevenbergMarquardtParams()
     optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial, params)
     result = optimizer.optimize()
-    print("\nFinal Result:\n{}".format(result))
+    print(f"\nFinal Result:\n{result}")
 
 
 if __name__ == "__main__":

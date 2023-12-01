@@ -42,10 +42,7 @@ class Argument:
                  ctype: Union[Type, TemplatedType],
                  name: str,
                  default: ParseResults = None):
-        if isinstance(ctype, Iterable):
-            self.ctype = ctype[0]  # type: ignore
-        else:
-            self.ctype = ctype
+        self.ctype = ctype[0] if isinstance(ctype, Iterable) else ctype
         self.name = name
         self.default = default
         self.parent: Union[ArgumentList, None] = None
@@ -55,7 +52,7 @@ class Argument:
 
     def to_cpp(self) -> str:
         """Return full C++ representation of argument."""
-        return '{} {}'.format(repr(self.ctype), self.name)
+        return f'{repr(self.ctype)} {self.name}'
 
 
 class ArgumentList:
@@ -135,8 +132,7 @@ class ReturnType:
         return self.type1.typename.name == "void" and not self.type2
 
     def __repr__(self) -> str:
-        return "{}{}".format(
-            self.type1, (', ' + self.type2.__repr__()) if self.type2 else '')
+        return f"{self.type1}{f', {self.type2.__repr__()}' if self.type2 else ''}"
 
     def to_cpp(self) -> str:
         """
@@ -182,8 +178,7 @@ class GlobalFunction:
         self.args.parent = self
 
     def __repr__(self) -> str:
-        return "GlobalFunction:  {}{}({})".format(self.return_type, self.name,
-                                                  self.args)
+        return f"GlobalFunction:  {self.return_type}{self.name}({self.args})"
 
     def to_cpp(self) -> str:
         """Generate the C++ code for wrapping."""
