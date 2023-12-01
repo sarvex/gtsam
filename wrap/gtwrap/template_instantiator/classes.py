@@ -115,10 +115,9 @@ class InstantiatedClass(parser.Class):
         helper = InstantiationHelper(
             instantiation_type=InstantiatedConstructor)
 
-        instantiated_ctors = helper.multilevel_instantiation(
-            self.original.ctors, typenames, self)
-
-        return instantiated_ctors
+        return helper.multilevel_instantiation(
+            self.original.ctors, typenames, self
+        )
 
     def instantiate_static_methods(self, typenames):
         """
@@ -132,10 +131,9 @@ class InstantiatedClass(parser.Class):
         helper = InstantiationHelper(
             instantiation_type=InstantiatedStaticMethod)
 
-        instantiated_static_methods = helper.multilevel_instantiation(
-            self.original.static_methods, typenames, self)
-
-        return instantiated_static_methods
+        return helper.multilevel_instantiation(
+            self.original.static_methods, typenames, self
+        )
 
     def instantiate_methods(self, typenames):
         """
@@ -150,10 +148,9 @@ class InstantiatedClass(parser.Class):
 
         helper = InstantiationHelper(instantiation_type=InstantiatedMethod)
 
-        instantiated_methods = helper.multilevel_instantiation(
-            self.original.methods, typenames, self)
-
-        return instantiated_methods
+        return helper.multilevel_instantiation(
+            self.original.methods, typenames, self
+        )
 
     def instantiate_operators(self, typenames):
         """
@@ -203,13 +200,10 @@ class InstantiatedClass(parser.Class):
             self.instantiations,
             self.cpp_typename(),
         )
-        # Convert to type Variable
-        instantiated_properties = [
-            parser.Variable(ctype=[arg.ctype],
-                            name=arg.name,
-                            default=arg.default) for arg in instantiated_
+        return [
+            parser.Variable(ctype=[arg.ctype], name=arg.name, default=arg.default)
+            for arg in instantiated_
         ]
-        return instantiated_properties
 
     def cpp_typename(self):
         """
@@ -217,9 +211,7 @@ class InstantiatedClass(parser.Class):
         class.
         """
         if self.original.template:
-            name = "{}<{}>".format(
-                self.original.name,
-                ", ".join([inst.to_cpp() for inst in self.instantiations]))
+            name = f'{self.original.name}<{", ".join([inst.to_cpp() for inst in self.instantiations])}>'
         else:
             name = self.original.name
         namespaces_name = self.namespaces()

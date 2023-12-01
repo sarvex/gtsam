@@ -63,7 +63,7 @@ class TestCal3Fisheye(GtsamTestCase):
     def test_distortion(self):
         """Fisheye distortion and rectification"""
         equidistant = gtsam.Cal3Fisheye()
-        perspective_pt = self.obj_point[0:2] / self.obj_point[2]
+        perspective_pt = self.obj_point[:2] / self.obj_point[2]
         distorted_pt = equidistant.uncalibrate(perspective_pt)
         rectified_pt = equidistant.calibrate(distorted_pt)
         self.gtsamAssertEquals(distorted_pt, self.img_point)

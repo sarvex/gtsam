@@ -48,8 +48,7 @@ def parse_args() -> argparse.Namespace:
                         default=False,
                         action='store_true')
     parser.add_argument("--verbose", default=False, action='store_true')
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 class ImuFactorExample(PreintegrationExample):
@@ -99,8 +98,7 @@ class ImuFactorExample(PreintegrationExample):
         params = gtsam.LevenbergMarquardtParams()
         params.setVerbosityLM("SUMMARY")
         optimizer = gtsam.LevenbergMarquardtOptimizer(graph, initial, params)
-        result = optimizer.optimize()
-        return result
+        return optimizer.optimize()
 
     def plot(self,
              values: gtsam.Values,
@@ -229,10 +227,8 @@ class ImuFactorExample(PreintegrationExample):
             print("Covariance on bias:\n",
                   marginals.marginalCovariance(BIAS_KEY))
             for i in range(num_poses):
-                print("Covariance on pose {}:\n{}\n".format(
-                    i, marginals.marginalCovariance(X(i))))
-                print("Covariance on vel {}:\n{}\n".format(
-                    i, marginals.marginalCovariance(V(i))))
+                print(f"Covariance on pose {i}:\n{marginals.marginalCovariance(X(i))}\n")
+                print(f"Covariance on vel {i}:\n{marginals.marginalCovariance(V(i))}\n")
 
         self.plot(result, show=True)
 

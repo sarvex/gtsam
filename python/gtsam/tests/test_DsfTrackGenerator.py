@@ -27,12 +27,10 @@ class TestDsfTrackGenerator(GtsamTestCase):
         keypoints_list = get_dummy_keypoints_list()
         nontransitive_matches_dict = get_nontransitive_matches()  # contains one non-transitive track
 
-        # For each image pair (i1,i2), we provide a (K,2) matrix
-        # of corresponding keypoint indices (k1,k2).
-        matches_dict = {}
-        for (i1,i2), corr_idxs in nontransitive_matches_dict.items():
-            matches_dict[IndexPair(i1, i2)] = corr_idxs
-
+        matches_dict = {
+            IndexPair(i1, i2): corr_idxs
+            for (i1, i2), corr_idxs in nontransitive_matches_dict.items()
+        }
         tracks = gtsam.gtsfm.tracksFromPairwiseMatches(
             matches_dict,
             keypoints_list,
@@ -47,15 +45,10 @@ class TestDsfTrackGenerator(GtsamTestCase):
         kps_i1 = Keypoints(np.array([[50.0, 60], [70, 80], [90, 100]]))
         kps_i2 = Keypoints(np.array([[110.0, 120], [130, 140]]))
 
-        keypoints_list = []
-        keypoints_list.append(kps_i0)
-        keypoints_list.append(kps_i1)
-        keypoints_list.append(kps_i2)
-
+        keypoints_list = [kps_i0, kps_i1, kps_i2]
         # For each image pair (i1,i2), we provide a (K,2) matrix
         # of corresponding keypoint indices (k1,k2).
-        matches_dict = {}
-        matches_dict[IndexPair(0, 1)] = np.array([[0, 0], [1, 1]])
+        matches_dict = {IndexPair(0, 1): np.array([[0, 0], [1, 1]])}
         matches_dict[IndexPair(1, 2)] = np.array([[2, 0], [1, 1]])
 
         tracks = gtsam.gtsfm.tracksFromPairwiseMatches(
@@ -110,8 +103,7 @@ class TestSfmTrack2d(GtsamTestCase):
 
     def test_sfm_track_2d_constructor(self) -> None:
         """Test construction of 2D SfM track."""
-        measurements = []
-        measurements.append((0, Point2(10, 20)))
+        measurements = [(0, Point2(10, 20))]
         track = SfmTrack2d(measurements=measurements)
         track.measurement(0)
         assert track.numberMeasurements() == 1
@@ -156,13 +148,12 @@ def get_dummy_keypoints_list() -> List[Keypoints]:
             [5, 5],
         ]
     )
-    keypoints_list = [
+    return [
         Keypoints(coordinates=img1_kp_coords),
         Keypoints(coordinates=img2_kp_coords),
         Keypoints(coordinates=img3_kp_coords),
         Keypoints(coordinates=img4_kp_coords),
     ]
-    return keypoints_list
 
 
 def get_nontransitive_matches() -> Dict[Tuple[int, int], np.ndarray]:
@@ -175,14 +166,13 @@ def get_nontransitive_matches() -> Dict[Tuple[int, int], np.ndarray]:
 
     Transitivity is violated due to the match between frames 0 and 3. 
     """
-    nontransitive_matches_dict = {
+    return {
         (0, 1): np.array([[0, 2]]),
         (1, 2): np.array([[2, 3]]),
         (0, 2): np.array([[0, 3]]),
         (0, 3): np.array([[1, 4]]),
         (2, 3): np.array([[3, 4]]),
     }
-    return nontransitive_matches_dict
 
 
 if __name__ == "__main__":

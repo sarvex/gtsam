@@ -19,10 +19,7 @@ class Accumulator(object):
 
   def Set(self, y):
     """Set value from argument"""
-    if type(self) == type(y):
-      self._s, self._t = y._s, y._t
-    else:
-      self._s, self._t = float(y), 0.0
+    self._s, self._t = (y._s, y._t) if type(self) == type(y) else (float(y), 0.0)
 
   def __init__(self, y = 0.0):
     """Constructor"""
@@ -71,10 +68,9 @@ class Accumulator(object):
     """Return sum + y"""
     if y == 0.0:
       return self._s
-    else:
-      b = Accumulator(self)
-      b.Add(y)
-      return b._s
+    b = Accumulator(self)
+    b.Add(y)
+    return b._s
 
   def Negate(self):
     """Negate sum"""

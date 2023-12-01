@@ -223,10 +223,7 @@ class TestPose3(GtsamTestCase):
         sTt = Pose3(Rot3.Rodrigues(0, 0, -math.pi), Point3(2, 4, 0))
         transformed = sTt.transformTo(square)
 
-        st_pairs = []
-        for j in range(4):
-            st_pairs.append((square[:,j], transformed[:,j]))
-
+        st_pairs = [(square[:,j], transformed[:,j]) for j in range(4)]
         # Recover the transformation sTt
         estimated_sTt = Pose3.Align(st_pairs)
         self.gtsamAssertEquals(estimated_sTt, sTt, 1e-10)

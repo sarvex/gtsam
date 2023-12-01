@@ -34,68 +34,68 @@ class Math(object):
   inf = float("inf") if sys.version_info > (2, 6) else 2 * maxval
   nan = float("nan") if sys.version_info > (2, 6) else inf - inf
 
-  def sq(x):
+  def sq(self):
     """Square a number"""
 
-    return x * x
+    return self * self
   sq = staticmethod(sq)
 
-  def cbrt(x):
+  def cbrt(self):
     """Real cube root of a number"""
 
-    y = math.pow(abs(x), 1/3.0)
-    return y if x >= 0 else -y
+    y = math.pow(abs(self), 1/3.0)
+    return y if self >= 0 else -y
   cbrt = staticmethod(cbrt)
 
-  def log1p(x):
+  def log1p(self):
     """log(1 + x) accurate for small x (missing from python 2.5.2)"""
 
     if sys.version_info > (2, 6):
-      return math.log1p(x)
+      return math.log1p(self)
 
-    y = 1 + x
+    y = 1 + self
     z = y - 1
     # Here's the explanation for this magic: y = 1 + z, exactly, and z
     # approx x, thus log(y)/z (which is nearly constant near z = 0) returns
     # a good approximation to the true log(1 + x)/x.  The multiplication x *
     # (log(y)/z) introduces little additional error.
-    return x if z == 0 else x * math.log(y) / z
+    return self if z == 0 else self * math.log(y) / z
   log1p = staticmethod(log1p)
 
-  def atanh(x):
+  def atanh(self):
     """atanh(x) (missing from python 2.5.2)"""
 
     if sys.version_info > (2, 6):
-      return math.atanh(x)
+      return math.atanh(self)
 
-    y = abs(x)                  # Enforce odd parity
+    y = abs(self)
     y = Math.log1p(2 * y/(1 - y))/2
-    return -y if x < 0 else y
+    return -y if self < 0 else y
   atanh = staticmethod(atanh)
 
-  def copysign(x, y):
+  def copysign(self, y):
     """return x with the sign of y (missing from python 2.5.2)"""
 
     if sys.version_info > (2, 6):
-      return math.copysign(x, y)
+      return math.copysign(self, y)
 
-    return math.fabs(x) * (-1 if y < 0 or (y == 0 and 1/y < 0) else 1)
+    return math.fabs(self) * (-1 if y < 0 or (y == 0 and 1/y < 0) else 1)
   copysign = staticmethod(copysign)
 
-  def norm(x, y):
+  def norm(self, y):
     """Private: Normalize a two-vector."""
-    r = math.hypot(x, y)
-    return x/r, y/r
+    r = math.hypot(self, y)
+    return self / r, y/r
   norm = staticmethod(norm)
 
-  def sum(u, v):
+  def sum(self, v):
     """Error free transformation of a sum."""
     # Error free transformation of a sum.  Note that t can be the same as one
     # of the first two arguments.
-    s = u + v
+    s = self + v
     up = s - v
     vpp = s - up
-    up -= u
+    up -= self
     vpp -= v
     t = -(up + vpp)
     # u + v =       s      + t
@@ -103,16 +103,17 @@ class Math(object):
     return s, t
   sum = staticmethod(sum)
 
-  def polyval(N, p, s, x):
+  def polyval(self, p, s, x):
     """Evaluate a polynomial."""
-    y = float(0 if N < 0 else p[s]) # make sure the returned value is a float
-    while N > 0:
-      N -= 1; s += 1
+    y = float(0 if self < 0 else p[s])
+    while self > 0:
+      self -= 1
+      s += 1
       y = y * x + p[s]
     return y
   polyval = staticmethod(polyval)
 
-  def AngRound(x):
+  def AngRound(self):
     """Private: Round an angle so that small values underflow to zero."""
     # The makes the smallest gap in x = 1/16 - nextafter(1/16, 0) = 1/2^57
     # for reals = 0.7 pm on the earth if x is an angle in degrees.  (This
@@ -120,45 +121,47 @@ class Math(object):
     # degrees.)  We use this to avoid having to deal with near singular
     # cases when x is non-zero but tiny (e.g., 1.0e-200).
     z = 1/16.0
-    y = abs(x)
+    y = abs(self)
     # The compiler mustn't "simplify" z - (z - y) to y
     if y < z: y = z - (z - y)
-    return 0.0 if x == 0 else (-y if x < 0 else y)
+    return 0.0 if self == 0 else -y if self < 0 else y
   AngRound = staticmethod(AngRound)
 
-  def AngNormalize(x):
+  def AngNormalize(self):
     """reduce angle to (-180,180]"""
 
-    y = math.fmod(x, 360)
+    y = math.fmod(self, 360)
     # On Windows 32-bit with python 2.7, math.fmod(-0.0, 360) = +0.0
     # This fixes this bug.  See also Math::AngNormalize in the C++ library.
     # sincosd has a similar fix.
-    y = x if x == 0 else y
+    y = self if self == 0 else y
     return (y + 360 if y <= -180 else
             (y if y <= 180 else y - 360))
   AngNormalize = staticmethod(AngNormalize)
 
-  def LatFix(x):
+  def LatFix(self):
     """replace angles outside [-90,90] by NaN"""
 
-    return Math.nan if abs(x) > 90 else x
+    return Math.nan if abs(self) > 90 else self
   LatFix = staticmethod(LatFix)
 
-  def AngDiff(x, y):
+  def AngDiff(self, y):
     """compute y - x and reduce to [-180,180] accurately"""
 
-    d, t = Math.sum(Math.AngNormalize(-x), Math.AngNormalize(y))
+    d, t = Math.sum(Math.AngNormalize(-self), Math.AngNormalize(y))
     d = Math.AngNormalize(d)
     return Math.sum(-180 if d == 180 and t > 0 else d, t)
   AngDiff = staticmethod(AngDiff)
 
-  def sincosd(x):
+  def sincosd(self):
     """Compute sine and cosine of x in degrees."""
 
-    r = math.fmod(x, 360)
+    r = math.fmod(self, 360)
     q = Math.nan if Math.isnan(r) else int(math.floor(r / 90 + 0.5))
-    r -= 90 * q; r = math.radians(r)
-    s = math.sin(r); c = math.cos(r)
+    r -= 90 * q
+    r = math.radians(r)
+    s = math.sin(r)
+    c = math.cos(r)
     q = q % 4
     if q == 1:
       s, c =  c, -s
@@ -170,22 +173,23 @@ class Math(object):
     # On Windows 32-bit with python 2.7, math.fmod(-0.0, 360) = +0.0
     # (x, c) here fixes this bug.  See also Math::sincosd in the C++ library.
     # AngNormalize has a similar fix.
-    s, c = (x, c) if x == 0 else (0.0+s, 0.0+c)
+    s, c = (self, c) if self == 0 else (0.0+s, 0.0+c)
     return s, c
   sincosd = staticmethod(sincosd)
 
-  def atan2d(y, x):
+  def atan2d(self, x):
     """compute atan2(y, x) with the result in degrees"""
 
-    if abs(y) > abs(x):
-      q = 2; x, y = y, x
+    if abs(self) > abs(x):
+      q = 2
+      x, self = self, x
     else:
       q = 0
     if x < 0:
       q += 1; x = -x
-    ang = math.degrees(math.atan2(y, x))
+    ang = math.degrees(math.atan2(self, x))
     if q == 1:
-      ang = (180 if y >= 0 else -180) - ang
+      ang = (180 if self >= 0 else -180) - ang
     elif q == 2:
       ang =  90 - ang
     elif q == 3:
@@ -193,14 +197,14 @@ class Math(object):
     return ang
   atan2d = staticmethod(atan2d)
 
-  def isfinite(x):
+  def isfinite(self):
     """Test for finiteness"""
 
-    return abs(x) <= Math.maxval
+    return abs(self) <= Math.maxval
   isfinite = staticmethod(isfinite)
 
-  def isnan(x):
+  def isnan(self):
     """Test if nan"""
 
-    return math.isnan(x) if sys.version_info > (2, 6) else x != x
+    return math.isnan(self) if sys.version_info > (2, 6) else self != self
   isnan = staticmethod(isnan)

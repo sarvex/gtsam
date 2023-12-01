@@ -116,20 +116,23 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             the current wrapper id
         """
         if collector_function is not None:
-            is_instantiated_class = isinstance(collector_function[1],
-                                               instantiator.InstantiatedClass)
-
             if function_name is None:
+                is_instantiated_class = isinstance(collector_function[1],
+                                                   instantiator.InstantiatedClass)
+
                 if is_instantiated_class:
                     function_name = collector_function[0] + \
-                                    collector_function[1].name + '_' + collector_function[2]
+                                        collector_function[1].name + '_' + collector_function[2]
                 else:
                     function_name = collector_function[1].name
 
             self.wrapper_map[self.wrapper_id] = (
-                collector_function[0], collector_function[1],
-                collector_function[2], function_name + '_' +
-                str(self.wrapper_id + id_diff), collector_function[3])
+                collector_function[0],
+                collector_function[1],
+                collector_function[2],
+                f'{function_name}_{str(self.wrapper_id + id_diff)}',
+                collector_function[3],
+            )
 
         self.wrapper_id += 1
 
@@ -250,20 +253,20 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
             var_arg_wrap += " && isa(varargin{{{num}}},'{data_type}')".format(
                 num=i, data_type=check_type)
-            if name == 'Vector':
-                var_arg_wrap += ' && size(varargin{{{num}}},2)==1'.format(
-                    num=i)
             if name == 'Point2':
                 var_arg_wrap += ' && size(varargin{{{num}}},1)==2'.format(
                     num=i)
                 var_arg_wrap += ' && size(varargin{{{num}}},2)==1'.format(
                     num=i)
-            if name == 'Point3':
+            elif name == 'Point3':
                 var_arg_wrap += ' && size(varargin{{{num}}},1)==3'.format(
                     num=i)
                 var_arg_wrap += ' && size(varargin{{{num}}},2)==1'.format(
                     num=i)
 
+            elif name == 'Vector':
+                var_arg_wrap += ' && size(varargin{{{num}}},2)==1'.format(
+                    num=i)
         return var_arg_wrap
 
     def _wrap_list_variable_arguments(self, args):
@@ -300,7 +303,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         check_statement = 'if length(varargin) == {param_count}'.format(
             param_count=param_count)
 
-        for _, arg in enumerate(args.list()):
+        for arg in args.list():
             name = arg.ctype.typename.name
 
             if name in self.not_check_type:
@@ -319,27 +322,23 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             check_statement += " && isa(varargin{{{id}}},'{ctype}')".format(
                 id=arg_id, ctype=check_type)
 
-            if name == 'Vector':
-                check_statement += ' && size(varargin{{{num}}},2)==1'.format(
-                    num=arg_id)
             if name == 'Point2':
                 check_statement += ' && size(varargin{{{num}}},1)==2'.format(
                     num=arg_id)
                 check_statement += ' && size(varargin{{{num}}},2)==1'.format(
                     num=arg_id)
-            if name == 'Point3':
+            elif name == 'Point3':
                 check_statement += ' && size(varargin{{{num}}},1)==3'.format(
                     num=arg_id)
                 check_statement += ' && size(varargin{{{num}}},2)==1'.format(
                     num=arg_id)
 
+            elif name == 'Vector':
+                check_statement += ' && size(varargin{{{num}}},2)==1'.format(
+                    num=arg_id)
             arg_id += 1
 
-        check_statement = check_statement \
-            if check_statement == '' \
-            else check_statement + '\n'
-
-        return check_statement
+        return check_statement if check_statement == '' else check_statement + '\n'
 
     def _unwrap_argument(self, arg, arg_id=0, instantiated_class=None):
         ctype_camel = self._format_type_name(arg.ctype.typename, separator='')
@@ -437,7 +436,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
     def _wrapper_name(self):
         """Determine the name of wrapper function."""
-        return self.module_name + '_wrapper'
+        return f'{self.module_name}_wrapper'
 
     def class_serialize_comment(self, class_name, static_methods):
         """Generate comments for serialize methods."""
@@ -494,13 +493,13 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
         if len(properties) != 0:
             comment += '%\n' \
-                       '%-------Properties-------\n'
+                           '%-------Properties-------\n'
             for propty in properties:
-                comment += '%{}\n'.format(propty.name)
+                comment += f'%{propty.name}\n'
 
         if len(methods) != 0:
             comment += '%\n' \
-                       '%-------Methods-------\n'
+                           '%-------Methods-------\n'
 
         methods = sorted(methods, key=lambda name: name.name)
 
@@ -559,9 +558,14 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
             if global_funcs:
                 method_text = self.wrap_global_function(method)
-                self.content.append(("".join([
-                    '+' + x + '/' for x in global_ns.full_namespaces()[1:]
-                ])[:-1], [(method[0].name + '.m', method_text)]))
+                self.content.append(
+                    (
+                        "".join(
+                            [f'+{x}/' for x in global_ns.full_namespaces()[1:]]
+                        )[:-1],
+                        [(f'{method[0].name}.m', method_text)],
+                    )
+                )
             else:
                 method_text = self.wrap_method(method)
                 output += ''
@@ -586,7 +590,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                 param_wrap += '0\n'
             else:
                 param_wrap += str(len(overload.args.list())) \
-                              + self._wrap_variable_arguments(overload.args, False) + '\n'
+                                  + self._wrap_variable_arguments(overload.args, False) + '\n'
 
             # Determine format of return and varargout statements
             return_type_formatted = self._format_return_type(
@@ -610,14 +614,16 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             end''').format(func_name=function_name),
                                       prefix='      ')
 
-        global_function = textwrap.indent(textwrap.dedent('''\
+        return textwrap.indent(
+            textwrap.dedent(
+                '''\
             function varargout = {m_method}(varargin)
             {statements}
             end
-        ''').format(m_method=function_name, statements=param_wrap),
-                                          prefix='')
-
-        return global_function
+        '''
+            ).format(m_method=function_name, statements=param_wrap),
+            prefix='',
+        )
 
     def wrap_class_constructors(self, namespace_name, inst_class, parent_name,
                                 ctors, is_virtual):
@@ -745,18 +751,18 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         class_pointer = "  ptr_{class_name} = 0".format(class_name=class_name)
 
         if len(inst_class.properties) > 0:
-            properties = '\n' + "\n".join(
-                ["  {}".format(p.name) for p in inst_class.properties])
+            properties = '\n' + "\n".join([f"  {p.name}" for p in inst_class.properties])
         else:
             properties = ''
 
         properties = class_pointer + properties
-        properties_block = textwrap.dedent('''\
+        return textwrap.dedent(
+            '''\
             properties
             {properties}
             end
-        ''').format(properties=properties)
-        return properties_block
+        '''
+        ).format(properties=properties)
 
     def wrap_class_properties(self, namespace_name: str,
                               inst_class: InstantiatedClass):
@@ -802,18 +808,23 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         """Generate the delete function for the Matlab class."""
         class_name = inst_class.name
 
-        methods_text = textwrap.indent(textwrap.dedent("""\
+        return textwrap.indent(
+            textwrap.dedent(
+                """\
             function delete(obj)
               {wrapper}({num}, obj.ptr_{class_name});
             end\n
-        """).format(num=self._update_wrapper_id(
-            (namespace_name, inst_class, 'deconstructor', None)),
-                    wrapper=self._wrapper_name(),
-                    class_name="".join(inst_class.parent.full_namespaces()) +
-                    class_name),
-                                       prefix='  ')
-
-        return methods_text
+        """
+            ).format(
+                num=self._update_wrapper_id(
+                    (namespace_name, inst_class, 'deconstructor', None)
+                ),
+                wrapper=self._wrapper_name(),
+                class_name="".join(inst_class.parent.full_namespaces())
+                + class_name,
+            ),
+            prefix='  ',
+        )
 
     def wrap_class_display(self):
         """Generate the display function for the Matlab class."""
@@ -833,13 +844,9 @@ class MatlabWrapper(CheckMixin, FormatMixin):
     def _format_varargout(cls, return_type, return_type_formatted):
         """Determine format of return and varargout statements"""
         if cls._return_count(return_type) == 1:
-            varargout = '' \
-                if return_type_formatted == 'void' \
-                else 'varargout{1} = '
+            return '' if return_type_formatted == 'void' else 'varargout{1} = '
         else:
-            varargout = '[ varargout{1} varargout{2} ] = '
-
-        return varargout
+            return '[ varargout{1} varargout{2} ] = '
 
     def wrap_class_methods(self,
                            namespace_name,
@@ -961,16 +968,12 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                     '''.format(name=''.join(format_name))),
                                            prefix="  ")
 
+            end_statement = '' \
+                    if check_statement == '' \
             for static_overload in static_method:
                 check_statement = self._wrap_method_check_statement(
                     static_overload.args)
 
-                end_statement = '' \
-                    if check_statement == '' \
-                    else textwrap.indent(textwrap.dedent("""
-                              return
-                            end
-                            """), prefix='')
                 method_text += textwrap.indent(textwrap.dedent('''\
                       % {name_caps} usage: {name_upper_case}({args}) : returns {return_type}
                       % Doxygen can be found at https://gtsam.org/doxygen/
@@ -1012,11 +1015,17 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
         if serialize and self.use_boost_serialization:
             method_text += WrapperTemplate.matlab_deserialize.format(
-                class_name=namespace_name + '.' + instantiated_class.name,
+                class_name=f'{namespace_name}.{instantiated_class.name}',
                 wrapper=self._wrapper_name(),
                 id=self._update_wrapper_id(
-                    (namespace_name, instantiated_class, 'string_deserialize',
-                     'deserialize')))
+                    (
+                        namespace_name,
+                        instantiated_class,
+                        'string_deserialize',
+                        'deserialize',
+                    )
+                ),
+            )
 
         return method_text
 
@@ -1054,32 +1063,28 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                 instantiated_class.parent_class)).replace("::", "."))
 
         # Class properties
-        content_text += '  ' + reduce(
-            self._insert_spaces,
-            self.wrap_properties_block(namespace_file_name,
-                                       instantiated_class).splitlines()) + '\n'
+        content_text += (
+            f'  {reduce(self._insert_spaces, self.wrap_properties_block(namespace_file_name, instantiated_class).splitlines())}'
+            + '\n'
+        )
 
         # Class constructor
-        content_text += '  ' + reduce(
-            self._insert_spaces,
-            self.wrap_class_constructors(
-                namespace_name,
-                instantiated_class,
-                instantiated_class.parent_class,
-                instantiated_class.ctors,
-                instantiated_class.is_virtual,
-            ).splitlines()) + '\n'
+        content_text += (
+            f'  {reduce(self._insert_spaces, self.wrap_class_constructors(namespace_name, instantiated_class, instantiated_class.parent_class, instantiated_class.ctors, instantiated_class.is_virtual).splitlines())}'
+            + '\n'
+        )
 
         # Delete function
-        content_text += '  ' + reduce(
-            self._insert_spaces,
-            self.wrap_class_deconstructor(
-                namespace_name, instantiated_class).splitlines()) + '\n'
+        content_text += (
+            f'  {reduce(self._insert_spaces, self.wrap_class_deconstructor(namespace_name, instantiated_class).splitlines())}'
+            + '\n'
+        )
 
         # Display function
-        content_text += '  ' + reduce(
-            self._insert_spaces,
-            self.wrap_class_display().splitlines()) + '\n'
+        content_text += (
+            f'  {reduce(self._insert_spaces, self.wrap_class_display().splitlines())}'
+            + '\n'
+        )
 
         # Class methods
         serialize = [False]
@@ -1112,7 +1117,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             self._insert_spaces,
             self.wrap_static_methods(namespace_name, instantiated_class,
                                      serialize[0]).splitlines()) + '\n' + \
-        '  end\n'
+            '  end\n'
 
         # Close the classdef
         content_text += textwrap.dedent('''\
@@ -1124,14 +1129,11 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         # e.g. gtsam.Class.Enum.A
         for enum in instantiated_class.enums:
             enum_text = self.wrap_enum(enum)
-            if namespace_name != '':
-                submodule = f"+{namespace_name}/"
-            else:
-                submodule = ""
+            submodule = f"+{namespace_name}/" if namespace_name != '' else ""
             submodule += f"+{instantiated_class.name}"
             self.content.append((submodule, [enum_text]))
 
-        return file_name + '.m', content_text
+        return f'{file_name}.m', content_text
 
     def wrap_enum(self, enum):
         """
@@ -1140,7 +1142,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         Args:
             enum: The interface_parser.Enum instance
         """
-        file_name = enum.name + '.m'
+        file_name = f'{enum.name}.m'
         enum_template = textwrap.dedent("""\
         classdef {0} < uint32
             enumeration
@@ -1165,8 +1167,6 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         """
         namespaces = namespace.full_namespaces()
         inner_namespace = namespace.name != ''
-        wrapped = []
-
         top_level_scope = []
         inner_namespace_scope = []
 
@@ -1180,9 +1180,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             elif isinstance(element, parser.Enum):
                 file, content = self.wrap_enum(element)
                 if inner_namespace:
-                    module = "".join([
-                        '+' + x + '/' for x in namespace.full_namespaces()[1:]
-                    ])[:-1]
+                    module = "".join([f'+{x}/' for x in namespace.full_namespaces()[1:]])[:-1]
                     inner_namespace_scope.append((module, [(file, content)]))
                 else:
                     top_level_scope.append((file, content))
@@ -1194,11 +1192,18 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                     class_text = self.wrap_instantiated_class(
                         element, "".join(namespace.full_namespaces()))
 
-                    if not class_text is None:
-                        inner_namespace_scope.append(("".join([
-                            '+' + x + '/'
-                            for x in namespace.full_namespaces()[1:]
-                        ])[:-1], [(class_text[0], class_text[1])]))
+                    if class_text is not None:
+                        inner_namespace_scope.append(
+                            (
+                                "".join(
+                                    [
+                                        f'+{x}/'
+                                        for x in namespace.full_namespaces()[1:]
+                                    ]
+                                )[:-1],
+                                [(class_text[0], class_text[1])],
+                            )
+                        )
                 else:
                     class_text = self.wrap_instantiated_class(element)
                     top_level_scope.append((class_text[0], class_text[1]))
@@ -1209,7 +1214,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             self.content.append(inner_namespace_scope)
 
         if add_mex_file:
-            cpp_filename = self._wrapper_name() + '.cpp'
+            cpp_filename = f'{self._wrapper_name()}.cpp'
             self.content.append((cpp_filename, self.wrapper_file_headers))
 
         # Global functions
@@ -1220,7 +1225,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
         self.wrap_methods(all_funcs, True, global_ns=namespace)
 
-        return wrapped
+        return []
 
     def wrap_collector_function_shared_return(self,
                                               return_type_name,
@@ -1241,25 +1246,26 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         """
         Wrap the return type of the collector function when a std::pair is returned.
         """
-        return_type_text = '  out[' + str(func_id) + '] = '
+        return_type_text = f'  out[{str(func_id)}] = '
         pair_value = 'first' if func_id == 0 else 'second'
         new_line = '\n' if func_id == 0 else ''
 
         if self.is_shared_ptr(return_type) or self.is_ptr(return_type) or \
-            self.can_be_pointer(return_type):
-            shared_obj = 'pairResult.' + pair_value
+                self.can_be_pointer(return_type):
+            shared_obj = f'pairResult.{pair_value}'
 
             if not (return_type.is_shared_ptr or return_type.is_ptr):
-                shared_obj = 'std::make_shared<{name}>({shared_obj})' \
-                    .format(name=self._format_type_name(return_type.typename),
-                            shared_obj='pairResult.' + pair_value)
+                shared_obj = 'std::make_shared<{name}>({shared_obj})'.format(
+                    name=self._format_type_name(return_type.typename),
+                    shared_obj=f'pairResult.{pair_value}',
+                )
 
             if return_type.typename.name in self.ignore_namespace:
                 return_type_text = self.wrap_collector_function_shared_return(
                     return_type.typename, shared_obj, func_id, func_id == 0)
             else:
                 return_type_text += 'wrap_shared_ptr({0},"{1}", false);{new_line}' \
-                    .format(shared_obj,
+                        .format(shared_obj,
                             self._format_type_name(return_type.typename,
                                                    separator='.'),
                             new_line=new_line)
@@ -1278,7 +1284,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         expanded = ''
 
         if instantiated_class and \
-            self.is_enum(ctype, instantiated_class):
+                self.is_enum(ctype, instantiated_class):
             if self.is_class_enum(ctype, instantiated_class):
                 class_name = ".".join(instantiated_class.namespaces()[1:] +
                                       [instantiated_class.name])
@@ -1295,7 +1301,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                 f'out[0] = wrap_enum({obj},\"{enum_type}\");', prefix='  ')
 
         elif self.is_shared_ptr(ctype) or self.is_ptr(ctype) or \
-            self.can_be_pointer(ctype):
+                self.can_be_pointer(ctype):
             sep_method_name = partial(self._format_type_name,
                                       ctype.typename,
                                       include_namespace=True)
@@ -1312,8 +1318,9 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
                 # Specialize for std::optional so we access the underlying member
                 #TODO(Varun) How do we handle std::optional as a Mex type?
-                if isinstance(ctype, parser.TemplatedType) and \
-                    "std::optional" == str(ctype.typename)[:13]:
+                if isinstance(ctype, parser.TemplatedType) and str(
+                    ctype.typename
+                ).startswith("std::optional"):
                     obj = f"*{obj}"
                     type_name = ctype.template_params[0].typename
                     method_name_sep_dot = ".".join(
@@ -1321,9 +1328,9 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
 
                 shared_obj_template = 'std::make_shared<{method_name_sep_col}>({obj}),' \
-                                        '"{method_name_sep_dot}"'
+                                            '"{method_name_sep_dot}"'
                 shared_obj = shared_obj_template \
-                    .format(method_name_sep_col=sep_method_name(),
+                        .format(method_name_sep_col=sep_method_name(),
                             method_name_sep_dot=method_name_sep_dot,
                             obj=obj)
 
@@ -1370,30 +1377,29 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
         else:
             if isinstance(method.parent, instantiator.InstantiatedClass):
-                method_name = method.parent.to_cpp() + "::"
+                method_name = f"{method.parent.to_cpp()}::"
             else:
                 method_name = self._format_static_method(method, '::')
             method_name += method.name
 
-        obj = '  ' if return_1_name == 'void' else ''
-        obj += '{}{}({})'.format(obj_start, method_name, params)
+        obj = (
+            '  ' if return_1_name == 'void' else ''
+        ) + f'{obj_start}{method_name}({params})'
+        if return_1_name == 'void':
+            expanded += f'{obj};'
 
-        if return_1_name != 'void':
-            if return_count == 1:
-                expanded += self._collector_return(
-                    obj, return_1, instantiated_class=instantiated_class)
+        elif return_count == 1:
+            expanded += self._collector_return(
+                obj, return_1, instantiated_class=instantiated_class)
 
-            elif return_count == 2:
-                return_2 = method.return_type.type2
+        elif return_count == 2:
+            return_2 = method.return_type.type2
 
-                expanded += '  auto pairResult = {};\n'.format(obj)
-                expanded += self.wrap_collector_function_return_types(
-                    return_1, 0)
-                expanded += self.wrap_collector_function_return_types(
-                    return_2, 1)
-        else:
-            expanded += obj + ';'
-
+            expanded += f'  auto pairResult = {obj};\n'
+            expanded += self.wrap_collector_function_return_types(
+                return_1, 0)
+            expanded += self.wrap_collector_function_return_types(
+                return_2, 1)
         return expanded
 
     def wrap_collector_property_return(
@@ -1402,7 +1408,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             instantiated_class: InstantiatedClass = None):
         """Get the last collector function statement before return for a property."""
         property_name = class_property.name
-        obj = 'obj->{}'.format(property_name)
+        obj = f'obj->{property_name}'
 
         return self._collector_return(obj,
                                       class_property.ctype,
@@ -1430,8 +1436,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
         method_name = collector_func[3]
 
-        collector_function = "void {}" \
-            "(int nargout, mxArray *out[], int nargin, const mxArray *in[])\n".format(method_name)
+        collector_function = f"void {method_name}(int nargout, mxArray *out[], int nargin, const mxArray *in[])\n"
 
         if isinstance(collector_func[1], instantiator.InstantiatedClass):
             body = '{\n'
@@ -1537,15 +1542,15 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
                 if is_method:
                     shared_obj = '  auto obj = unwrap_shared_ptr<{class_name_sep}>' \
-                            '(in[0], "ptr_{class_name}");\n'.format(
+                                '(in[0], "ptr_{class_name}");\n'.format(
                                 class_name_sep=class_name_separated,
                                 class_name=class_name)
 
                 body += '  checkArguments("{method_name}",nargout,nargin{min1},' \
-                        '{num_args});\n' \
-                        '{shared_obj}' \
-                        '{body_args}' \
-                        '{return_body}\n'.format(
+                            '{num_args});\n' \
+                            '{shared_obj}' \
+                            '{body_args}' \
+                            '{return_body}\n'.format(
                     min1='-1' if is_method else '',
                     shared_obj=shared_obj,
                     method_name=method_name,
@@ -1555,7 +1560,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
             elif is_property:
                 shared_obj = '  auto obj = unwrap_shared_ptr<{class_name_sep}>' \
-                            '(in[0], "ptr_{class_name}");\n'.format(
+                                '(in[0], "ptr_{class_name}");\n'.format(
                                 class_name_sep=class_name_separated,
                                 class_name=class_name)
 
@@ -1575,9 +1580,9 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                         extra, instantiated_class=collector_func[1])
 
                     getter = '  checkArguments("{property_name}",nargout,nargin{min1},' \
-                            '{num_args});\n' \
-                            '{shared_obj}' \
-                            '{return_body}\n'.format(
+                                '{num_args});\n' \
+                                '{shared_obj}' \
+                                '{return_body}\n'.format(
                         property_name=extra.name,
                         min1='-1',
                         num_args=0,
@@ -1589,15 +1594,15 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                 # Setter
                 if "_set_" in method_name:
                     is_ptr_type = self.can_be_pointer(extra.ctype) and \
-                        not self.is_enum(extra.ctype, collector_func[1])
+                            not self.is_enum(extra.ctype, collector_func[1])
                     return_body = '  obj->{0} = {1}{0};'.format(
                         extra.name, '*' if is_ptr_type else '')
 
                     setter = '  checkArguments("{property_name}",nargout,nargin{min1},' \
-                            '{num_args});\n' \
-                            '{shared_obj}' \
-                            '{unpack_property}' \
-                            '{return_body}\n'.format(
+                                '{num_args});\n' \
+                                '{shared_obj}' \
+                                '{unpack_property}' \
+                                '{return_body}\n'.format(
                         property_name=extra.name,
                         min1='-1',
                         num_args=1,
@@ -1659,23 +1664,17 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                                      prefix='    ')
 
             if set_next_case:
-                next_case = '{}_upcastFromVoid_{}'.format(
-                    id_val[1].name, wrapper_id + 1)
+                next_case = f'{id_val[1].name}_upcastFromVoid_{wrapper_id + 1}'
             else:
                 next_case = None
 
-        mex_function = WrapperTemplate.mex_function.format(
-            module_name=self.module_name, cases=cases)
-
-        return mex_function
+        return WrapperTemplate.mex_function.format(
+            module_name=self.module_name, cases=cases
+        )
 
     def get_class_name(self, cls):
         """Get the name of the class `cls` taking template instantiations into account."""
-        if cls.instantiations:
-            class_name_sep = cls.name
-        else:
-            class_name_sep = cls.to_cpp()
-
+        class_name_sep = cls.name if cls.instantiations else cls.to_cpp()
         class_name = self._format_class_name(cls)
 
         return class_name, class_name_sep
@@ -1711,14 +1710,15 @@ class MatlabWrapper(CheckMixin, FormatMixin):
                     cls_insts += self._format_type_name(inst)
 
                 typedef_instances.append('typedef {original_class_name} {class_name_sep};' \
-                    .format(original_class_name=cls.to_cpp(),
+                        .format(original_class_name=cls.to_cpp(),
                             class_name_sep=cls.name))
 
             # Get the Boost exports for serialization
             if self.use_boost_serialization and \
-                cls.original.namespaces() and self._has_serialization(cls):
-                boost_class_export_guid += 'BOOST_CLASS_EXPORT_GUID({}, "{}");\n'.format(
-                    class_name_sep, class_name)
+                    cls.original.namespaces() and self._has_serialization(cls):
+                boost_class_export_guid += (
+                    f'BOOST_CLASS_EXPORT_GUID({class_name_sep}, "{class_name}");\n'
+                )
 
             # Typedef and declare the collector objects.
             typedef_collectors += WrapperTemplate.typdef_collectors.format(
@@ -1730,8 +1730,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
 
             if cls.is_virtual:
                 class_name, class_name_sep = self.get_class_name(cls)
-                rtti_classes += '    types.insert(std::make_pair(typeid({}).name(), "{}"));\n' \
-                    .format(class_name_sep, class_name)
+                rtti_classes += f'    types.insert(std::make_pair(typeid({class_name_sep}).name(), "{class_name}"));\n'
 
         # Generate the typedef instances string
         typedef_instances = "\n".join(typedef_instances)
@@ -1745,7 +1744,7 @@ class MatlabWrapper(CheckMixin, FormatMixin):
             module_name=self.module_name, rtti_classes=rtti_classes)
 
         return typedef_instances, boost_class_export_guid, \
-            typedef_collectors, delete_all_objs, rtti_register
+                typedef_collectors, delete_all_objs, rtti_register
 
     def generate_wrapper(self, namespace):
         """Generate the c++ wrapper."""
@@ -1827,7 +1826,8 @@ class MatlabWrapper(CheckMixin, FormatMixin):
         return WrapperTemplate.class_serialize_method.format(
             wrapper=self._wrapper_name(),
             wrapper_id=wrapper_id,
-            class_name=namespace_name + '.' + class_name)
+            class_name=f'{namespace_name}.{class_name}',
+        )
 
     def wrap_collector_function_serialize(self,
                                           class_name,

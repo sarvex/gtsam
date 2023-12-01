@@ -52,4 +52,4 @@ class Variable:
         self.parent = parent
 
     def __repr__(self) -> str:
-        return '{} {}'.format(self.ctype.__repr__(), self.name)
+        return f'{self.ctype.__repr__()} {self.name}'

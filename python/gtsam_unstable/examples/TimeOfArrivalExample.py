@@ -26,8 +26,7 @@ TIME_OF_ARRIVAL = TimeOfArrival(330)
 def define_microphones():
     """Create microphones."""
     height = 0.5
-    microphones = []
-    microphones.append(Point3(0, 0, height))
+    microphones = [Point3(0, 0, height)]
     microphones.append(Point3(403 * CM, 0, height))
     microphones.append(Point3(403 * CM, 403 * CM, height))
     microphones.append(Point3(0, 403 * CM, 2 * height))
@@ -36,15 +35,10 @@ def define_microphones():
 
 def create_trajectory(n):
     """Create ground truth trajectory."""
-    trajectory = []
-    timeOfEvent = 10
-    # simulate emitting a sound every second while moving on straight line
-    for key in range(n):
-        trajectory.append(
-            Event(timeOfEvent, 245 * CM + key * 1.0, 201.5 * CM, (212 - 45) * CM))
-        timeOfEvent += 1
-
-    return trajectory
+    return [
+        Event(timeOfEvent, 245 * CM + key * 1.0, 201.5 * CM, (212 - 45) * CM)
+        for timeOfEvent, key in enumerate(range(n), start=10)
+    ]
 
 
 def simulate_one_toa(microphones, event):
@@ -67,13 +61,10 @@ def create_graph(microphones, simulatedTOA):
     model = noiseModel.Isotropic.Sigma(1, 0.5 * MS)
 
     K = len(microphones)
-    key = 0
-    for toa in simulatedTOA:
+    for key, toa in enumerate(simulatedTOA):
         for i in range(K):
             factor = TOAFactor(key, microphones[i], toa[i], model)
             graph.push_back(factor)
-        key += 1
-
     return graph
 
 
@@ -92,7 +83,7 @@ def toa_example():
     microphones = define_microphones()
     K = len(microphones)
     for i in range(K):
-        print("mic {} = {}".format(i, microphones[i]))
+        print(f"mic {i} = {microphones[i]}")
 
     # Create a ground truth trajectory
     n = 5
@@ -104,7 +95,7 @@ def toa_example():
     simulatedTOA = simulate_toa(microphones, groundTruth)
     for key in range(n):
         for i in range(K):
-            print("z_{}{} = {} ms".format(key, i, simulatedTOA[key][i] / MS))
+            print(f"z_{key}{i} = {simulatedTOA[key][i] / MS} ms")
 
     # create factor graph
     graph = create_graph(microphones, simulatedTOA)

@@ -164,7 +164,7 @@ class TestHybridGaussianFactorGraph(GtsamTestCase):
         marginals = np.zeros((2, ))
 
         # Do importance sampling.
-        for s in range(N):
+        for _ in range(N):
             proposed = proposal_density.sample()  # sample from proposal
             target_proposed = target(proposed)  # evaluate target
             weight = target_proposed / proposal_density.evaluate(proposed)

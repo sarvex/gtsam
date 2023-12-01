@@ -76,9 +76,9 @@ def main():
     print("final error = ", graph.error(result))
 
     if args.output is None:
-        print("\nFactor Graph:\n{}".format(graph))
-        print("\nInitial Estimate:\n{}".format(initial))
-        print("Final Result:\n{}".format(result))
+        print(f"\nFactor Graph:\n{graph}")
+        print(f"\nInitial Estimate:\n{initial}")
+        print(f"Final Result:\n{result}")
     else:
         outputFile = args.output
         print("Writing results to file: ", outputFile)

@@ -27,7 +27,7 @@ class TestRobust(GtsamTestCase):
 
         def custom_loss(e):
             abs_e = abs(e)
-            return abs_e * abs_e / 2.0 if abs_e <= k else k * abs_e - k * k / 2.0
+            return abs_e * abs_e / 2.0 if abs_e <= k else k * abs_e - k**2 / 2.0
 
         custom_robust = gtsam.noiseModel.Robust.Create(
             gtsam.noiseModel.mEstimator.Custom(custom_weight, custom_loss,

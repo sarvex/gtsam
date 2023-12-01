@@ -53,18 +53,16 @@ def get_camera(radius):
     up = Point3(0, 0, 1)
     target = Point3(0, 0, 0)
     position = Point3(radius, 0, 0)
-    camera = PinholeCameraCal3_S2.Lookat(position, target, up, Cal3_S2())
-    return camera
+    return PinholeCameraCal3_S2.Lookat(position, target, up, Cal3_S2())
 
 
 def get_scenario(radius, pose_0, angular_velocity, delta_t):
     """Create the set of ground-truth landmarks and poses"""
     angular_velocity_vector = vector3(0, -angular_velocity, 0)
     linear_velocity_vector = vector3(radius * angular_velocity, 0, 0)
-    scenario = ConstantTwistScenario(
-        angular_velocity_vector, linear_velocity_vector, pose_0)
-
-    return scenario
+    return ConstantTwistScenario(
+        angular_velocity_vector, linear_velocity_vector, pose_0
+    )
 
 
 def IMU_example():

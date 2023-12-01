@@ -40,28 +40,29 @@ class TestCommand(Command):
 name = "geographiclib"
 version = "1.49"
 
-setup(name = name,
-      version = version,
-      description = "The geodesic routines from GeographicLib",
-      long_description = open("README.rst").read(),
-      author = "Charles Karney",
-      author_email = "charles@karney.com",
-      url = "https://geographiclib.sourceforge.io/" + version + "/python",
-      packages = ["geographiclib", "geographiclib/test"],
-      data_files = [],
-      license = "MIT",
-      keywords = "gis geographical earth distance geodesic",
-      classifiers = [
-          "Development Status :: 5 - Production/Stable",
-          "Intended Audience :: Developers",
-          "Intended Audience :: Science/Research",
-          "License :: OSI Approved :: MIT License",
-          "Operating System :: OS Independent",
-          "Programming Language :: Python",
-          "Topic :: Scientific/Engineering :: GIS",
-          "Topic :: Software Development :: Libraries :: Python Modules",
-      ],
-      cmdclass={
-          'test': TestCommand,
-      },
+setup(
+    name=name,
+    version=version,
+    description="The geodesic routines from GeographicLib",
+    long_description=open("README.rst").read(),
+    author="Charles Karney",
+    author_email="charles@karney.com",
+    url=f"https://geographiclib.sourceforge.io/{version}/python",
+    packages=["geographiclib", "geographiclib/test"],
+    data_files=[],
+    license="MIT",
+    keywords="gis geographical earth distance geodesic",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Topic :: Scientific/Engineering :: GIS",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+    cmdclass={
+        'test': TestCommand,
+    },
 )

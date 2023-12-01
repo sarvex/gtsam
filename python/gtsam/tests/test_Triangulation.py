@@ -61,10 +61,7 @@ class TestTriangulationExample(GtsamTestCase):
         Returns:
             list of measurements and list/CameraSet object for cameras
         """
-        if camera_set is not None:
-            cameras = camera_set()
-        else:
-            cameras = []
+        cameras = camera_set() if camera_set is not None else []
         measurements = []
 
         for k, pose in zip(cal_params, self.poses):
@@ -94,8 +91,7 @@ class TestTriangulationExample(GtsamTestCase):
         self.gtsamAssertEquals(self.landmark, triangulated_landmark, 1e-9)
 
         # Add some noise and try again: result should be ~ (4.995, 0.499167, 1.19814)
-        measurements_noisy = []
-        measurements_noisy.append(measurements[0] - np.array([0.1, 0.5]))
+        measurements_noisy = [measurements[0] - np.array([0.1, 0.5])]
         measurements_noisy.append(measurements[1] - np.array([-0.2, 0.3]))
 
         triangulated_landmark = gtsam.triangulatePoint3(self.poses,
@@ -227,10 +223,7 @@ class TestTriangulationExample(GtsamTestCase):
         cameras.append(camera1)
         cameras.append(camera2)
 
-        measurements = []
-        measurements.append(z1)
-        measurements.append(z2)
-
+        measurements = [z1, z2]
         landmarkDistanceThreshold = 10  # landmark is closer than that
         # all default except landmarkDistanceThreshold:
         params = TriangulationParameters(1.0, False, landmarkDistanceThreshold)

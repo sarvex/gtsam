@@ -21,10 +21,7 @@ class CheckMixin:
     not_check_type: list = []
 
     def _has_serialization(self, cls):
-        for m in cls.methods:
-            if m.name in self.whitelist:
-                return True
-        return False
+        return any(m.name in self.whitelist for m in cls.methods)
 
     def can_be_pointer(self, arg_type: parser.Type):
         """
@@ -150,8 +147,8 @@ class FormatMixin:
                                            is_method=is_method))
                 templates.append(template)
 
-            if len(templates) > 0:  # If there are no templates
-                formatted_type_name += '<{}>'.format(','.join(templates))
+            if templates:  # If there are no templates
+                formatted_type_name += f"<{','.join(templates)}>"
 
         else:
             for idx, _ in enumerate(type_name.instantiations):
@@ -176,23 +173,26 @@ class FormatMixin:
         """
         return_wrap = ''
 
-        if self._return_count(return_type) == 1:
-            return_wrap = self._format_type_name(
+        return (
+            self._format_type_name(
                 return_type.type1.typename,
                 separator=separator,
-                include_namespace=include_namespace)
-        else:
-            return_wrap = 'pair< {type1}, {type2} >'.format(
+                include_namespace=include_namespace,
+            )
+            if self._return_count(return_type) == 1
+            else 'pair< {type1}, {type2} >'.format(
                 type1=self._format_type_name(
                     return_type.type1.typename,
                     separator=separator,
-                    include_namespace=include_namespace),
+                    include_namespace=include_namespace,
+                ),
                 type2=self._format_type_name(
                     return_type.type2.typename,
                     separator=separator,
-                    include_namespace=include_namespace))
-
-        return return_wrap
+                    include_namespace=include_namespace,
+                ),
+            )
+        )
 
     def _format_class_name(self,
                            instantiated_class: instantiator.InstantiatedClass,

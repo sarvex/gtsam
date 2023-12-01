@@ -30,12 +30,12 @@ def instantiate_namespace(namespace):
 
                 # Use itertools to get all possible combinations of instantiations
                 # Works even if one template does not have an instantiation list
-                for instantiations in itertools.product(
-                        *original_class.template.instantiations):
-                    instantiated_content.append(
-                        InstantiatedClass(original_class,
-                                          list(instantiations)))
-
+                instantiated_content.extend(
+                    InstantiatedClass(original_class, list(instantiations))
+                    for instantiations in itertools.product(
+                        *original_class.template.instantiations
+                    )
+                )
         elif isinstance(element, parser.GlobalFunction):
             original_func = element
             if not original_func.template:
@@ -44,12 +44,14 @@ def instantiate_namespace(namespace):
             else:
                 # Use itertools to get all possible combinations of instantiations
                 # Works even if one template does not have an instantiation list
-                for instantiations in itertools.product(
-                        *original_func.template.instantiations):
-                    instantiated_content.append(
-                        InstantiatedGlobalFunction(original_func,
-                                                   list(instantiations)))
-
+                instantiated_content.extend(
+                    InstantiatedGlobalFunction(
+                        original_func, list(instantiations)
+                    )
+                    for instantiations in itertools.product(
+                        *original_func.template.instantiations
+                    )
+                )
         elif isinstance(element, parser.TypedefTemplateInstantiation):
             # This is for the case where `typedef` statements are used
             # to specify the template parameters.

@@ -166,10 +166,9 @@ def save_results(isam: gtsam.ISAM2, output_filename: str, first_gps_pose: int,
             print(f"Velocity:\n{velocity}")
             print(f"Bias:\n{bias}")
 
-            fp_out.write("{},{},{},{},{},{},{},{},{},{},{}\n".format(
-                gps_measurements[i].time, pose.x(), pose.y(), pose.z(),
-                pose_quat.x(), pose_quat.y(), pose_quat.z(), pose_quat.w(),
-                gps[0], gps[1], gps[2]))
+            fp_out.write(
+                f"{gps_measurements[i].time},{pose.x()},{pose.y()},{pose.z()},{pose_quat.x()},{pose_quat.y()},{pose_quat.z()},{pose_quat.w()},{gps[0]},{gps[1]},{gps[2]}\n"
+            )
 
 
 def parse_args() -> argparse.Namespace:
@@ -228,8 +227,6 @@ def optimize(gps_measurements: List[GpsMeasurement],
         current_pose_key = X(i)
         current_vel_key = V(i)
         current_bias_key = B(i)
-        t = gps_measurements[i].time
-
         if i == first_gps_pose:
             # Create initial estimate and prior on initial pose, velocity, and biases
             new_values.insert(current_pose_key, current_pose_global)
@@ -248,6 +245,8 @@ def optimize(gps_measurements: List[GpsMeasurement],
             # Summarize IMU data between the previous GPS measurement and now
             current_summarized_measurement = gtsam.PreintegratedImuMeasurements(
                 imu_params, current_bias)
+
+            t = gps_measurements[i].time
 
             while (j < len(imu_measurements)
                    and imu_measurements[j].time <= t):

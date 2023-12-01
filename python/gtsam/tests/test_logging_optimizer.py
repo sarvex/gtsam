@@ -98,8 +98,9 @@ class TestOptimizeComet(GtsamTestCase):
         comet.add_tag("GaussNewton")
         comet.log_parameter("method", "GaussNewton")
         time = datetime.now()
-        comet.set_name("GaussNewton-" + str(time.month) + "/" + str(time.day) + " "
-                       + str(time.hour)+":"+str(time.minute)+":"+str(time.second))
+        comet.set_name(
+            f"GaussNewton-{time.month}/{time.day} {time.hour}:{time.minute}:{time.second}"
+        )
 
         # I want to do some comet thing here
         def hook(optimizer, error):

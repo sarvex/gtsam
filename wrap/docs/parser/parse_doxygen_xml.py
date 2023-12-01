@@ -41,8 +41,7 @@ class ParseDoxygenXML():
                     if tree.getroot().tag == 'compounddef':
                         first_compound_def = tree.getroot()
                     else:
-                        first_compound_def = tree.find(
-                            './/{}'.format('compounddef'))
+                        first_compound_def = tree.find('.//compounddef')
 
                     if first_compound_def is None:
                         continue

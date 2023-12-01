@@ -668,8 +668,9 @@ def align_poses_sim3_ignore_missing(aTi_list: List[Optional[Pose3]], bTi_list: L
             valid_bTi_list.append(bTi)
             corresponding_aTi_list.append(aTi_list[i])
 
-    aSb = align_poses_sim3(aTi_list=corresponding_aTi_list, bTi_list=valid_bTi_list)
-    return aSb
+    return align_poses_sim3(
+        aTi_list=corresponding_aTi_list, bTi_list=valid_bTi_list
+    )
 
 
 def align_poses_sim3(aTi_list: List[Pose3], bTi_list: List[Pose3]) -> Similarity3:

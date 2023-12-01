@@ -716,10 +716,7 @@ class TestBackwardsCompatibility(GtsamTestCase):
         Returns:
             list of measurements and list/CameraSet object for cameras
         """
-        if camera_set is not None:
-            cameras = camera_set()
-        else:
-            cameras = []
+        cameras = camera_set() if camera_set is not None else []
         measurements = gtsam.Point2Vector()
 
         for k, pose in zip(cal_params, self.triangulation_poses):

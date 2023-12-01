@@ -53,10 +53,8 @@ class TestDSFMap(GtsamTestCase):
         merged_sets = set()
 
         for i in sets:
-            set_keys = []
             s = sets[i]
-            for val in IndexPairSetAsArray(s):
-                set_keys.append((val.i(), val.j()))
+            set_keys = [(val.i(), val.j()) for val in IndexPairSetAsArray(s)]
             merged_sets.add(tuple(set_keys))
 
         # fmt: off

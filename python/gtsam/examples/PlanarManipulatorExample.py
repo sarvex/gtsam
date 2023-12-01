@@ -211,8 +211,7 @@ class TestPose2SLAMExample(GtsamTestCase):
         """Helper function that prints out actual and expected if not equal."""
         equal = actual.equals(expected, tol)
         if not equal:
-            raise self.failureException(
-                "Poses are not equal:\n{}!={}".format(actual, expected))
+            raise self.failureException(f"Poses are not equal:\n{actual}!={expected}")
 
     def test_fk_arm(self):
         """Make sure forward kinematics is correct for some known test configurations."""

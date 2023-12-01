@@ -118,7 +118,7 @@ class Geodesic(object):
   OUT_ALL  = GeodesicCapability.OUT_ALL
   OUT_MASK = GeodesicCapability.OUT_MASK
 
-  def _SinCosSeries(sinp, sinx, cosx, c):
+  def _SinCosSeries(self, sinx, cosx, c):
     """Private: Evaluate a trig series using Clenshaw summation."""
     # Evaluate
     # y = sinp ? sum(c[i] * sin( 2*i    * x), i, 1, n) :
@@ -126,7 +126,7 @@ class Geodesic(object):
     # using Clenshaw summation.  N.B. c[0] is unused for sin series
     # Approx operation count = (n + 5) mult and (2 * n + 2) add
     k = len(c)                  # Point to one beyond last element
-    n = k - sinp
+    n = k - self
     ar = 2 * (cosx - sinx) * (cosx + sinx) # 2 * cos(2 * x)
     y1 = 0                                 # accumulators for sum
     if n & 1:
@@ -140,68 +140,65 @@ class Geodesic(object):
       # Unroll loop x 2, so accumulators return to their original role
       k -= 1; y1 = ar * y0 - y1 + c[k]
       k -= 1; y0 = ar * y1 - y0 + c[k]
-    return ( 2 * sinx * cosx * y0 if sinp # sin(2 * x) * y0
-             else cosx * (y0 - y1) )      # cos(x) * (y0 - y1)
+    return 2 * sinx * cosx * y0 if self else cosx * (y0 - y1)
   _SinCosSeries = staticmethod(_SinCosSeries)
 
-  def _Astroid(x, y):
+  def _Astroid(self, y):
     """Private: solve astroid equation."""
     # Solve k^4+2*k^3-(x^2+y^2-1)*k^2-2*y^2*k-y^2 = 0 for positive root k.
     # This solution is adapted from Geocentric::Reverse.
-    p = Math.sq(x)
+    p = Math.sq(self)
     q = Math.sq(y)
     r = (p + q - 1) / 6
-    if not(q == 0 and r <= 0):
-      # Avoid possible division by zero when r = 0 by multiplying equations
-      # for s and t by r^3 and r, resp.
-      S = p * q / 4            # S = r^3 * s
-      r2 = Math.sq(r)
-      r3 = r * r2
-      # The discriminant of the quadratic equation for T3.  This is zero on
-      # the evolute curve p^(1/3)+q^(1/3) = 1
-      disc = S * (S + 2 * r3)
-      u = r
-      if disc >= 0:
-        T3 = S + r3
-        # Pick the sign on the sqrt to maximize abs(T3).  This minimizes loss
-        # of precision due to cancellation.  The result is unchanged because
-        # of the way the T is used in definition of u.
-        T3 += -math.sqrt(disc) if T3 < 0 else math.sqrt(disc) # T3 = (r * t)^3
-        # N.B. cbrt always returns the real root.  cbrt(-8) = -2.
-        T = Math.cbrt(T3)       # T = r * t
-        # T can be zero; but then r2 / T -> 0.
-        u += T + (r2 / T if T != 0 else 0)
-      else:
-        # T is complex, but the way u is defined the result is real.
-        ang = math.atan2(math.sqrt(-disc), -(S + r3))
-        # There are three possible cube roots.  We choose the root which
-        # avoids cancellation.  Note that disc < 0 implies that r < 0.
-        u += 2 * r * math.cos(ang / 3)
-      v = math.sqrt(Math.sq(u) + q) # guaranteed positive
-      # Avoid loss of accuracy when u < 0.
-      uv = q / (v - u) if u < 0 else u + v # u+v, guaranteed positive
-      w = (uv - q) / (2 * v)               # positive?
-      # Rearrange expression for k to avoid loss of accuracy due to
-      # subtraction.  Division by 0 not possible because uv > 0, w >= 0.
-      k = uv / (math.sqrt(uv + Math.sq(w)) + w) # guaranteed positive
-    else:                                       # q == 0 && r <= 0
+    if q == 0 and r <= 0:
       # y = 0 with |x| <= 1.  Handle this case directly.
       # for y small, positive root is k = abs(y)/sqrt(1-x^2)
-      k = 0
-    return k
+      return 0
+    # Avoid possible division by zero when r = 0 by multiplying equations
+    # for s and t by r^3 and r, resp.
+    S = p * q / 4            # S = r^3 * s
+    r2 = Math.sq(r)
+    r3 = r * r2
+    # The discriminant of the quadratic equation for T3.  This is zero on
+    # the evolute curve p^(1/3)+q^(1/3) = 1
+    disc = S * (S + 2 * r3)
+    u = r
+    if disc >= 0:
+      T3 = S + r3
+      # Pick the sign on the sqrt to maximize abs(T3).  This minimizes loss
+      # of precision due to cancellation.  The result is unchanged because
+      # of the way the T is used in definition of u.
+      T3 += -math.sqrt(disc) if T3 < 0 else math.sqrt(disc) # T3 = (r * t)^3
+      # N.B. cbrt always returns the real root.  cbrt(-8) = -2.
+      T = Math.cbrt(T3)       # T = r * t
+      # T can be zero; but then r2 / T -> 0.
+      u += T + (r2 / T if T != 0 else 0)
+    else:
+      # T is complex, but the way u is defined the result is real.
+      ang = math.atan2(math.sqrt(-disc), -(S + r3))
+      # There are three possible cube roots.  We choose the root which
+      # avoids cancellation.  Note that disc < 0 implies that r < 0.
+      u += 2 * r * math.cos(ang / 3)
+    v = math.sqrt(Math.sq(u) + q) # guaranteed positive
+    # Avoid loss of accuracy when u < 0.
+    uv = q / (v - u) if u < 0 else u + v # u+v, guaranteed positive
+    w = (uv - q) / (2 * v)               # positive?
+      # Rearrange expression for k to avoid loss of accuracy due to
+      # subtraction.  Division by 0 not possible because uv > 0, w >= 0.
+    return uv / (math.sqrt(uv + Math.sq(w)) + w)
   _Astroid = staticmethod(_Astroid)
 
-  def _A1m1f(eps):
+  def _A1m1f(self):
     """Private: return A1-1."""
     coeff = [
       1, 4, 64, 0, 256,
     ]
     m = Geodesic.nA1_//2
-    t = Math.polyval(m, coeff, 0, Math.sq(eps)) / coeff[m + 1]
-    return (t + eps) / (1 - eps)
+    t = Math.polyval(m, coeff, 0, Math.sq(self)) / coeff[m + 1]
+    return (t + self) / (1 - self)
   _A1m1f = staticmethod(_A1m1f)
 
-  def _C1f(eps, c):
+  def _C1f(self, c):
     """Private: return C1."""
     coeff = [
       -1, 6, -16, 32,
@@ -211,17 +208,17 @@ class Geodesic(object):
       -7, 1280,
       -7, 2048,
     ]
-    eps2 = Math.sq(eps)
-    d = eps
+    eps2 = Math.sq(self)
+    d = self
     o = 0
     for l in range(1, Geodesic.nC1_ + 1): # l is index of C1p[l]
       m = (Geodesic.nC1_ - l) // 2        # order of polynomial in eps^2
       c[l] = d * Math.polyval(m, coeff, o, eps2) / coeff[o + m + 1]
       o += m + 2
-      d *= eps
+      d *= self
   _C1f = staticmethod(_C1f)
 
-  def _C1pf(eps, c):
+  def _C1pf(self, c):
     """Private: return C1'"""
     coeff = [
       205, -432, 768, 1536,
@@ -231,27 +228,27 @@ class Geodesic(object):
       3467, 7680,
       38081, 61440,
     ]
-    eps2 = Math.sq(eps)
-    d = eps
+    eps2 = Math.sq(self)
+    d = self
     o = 0
     for l in range(1, Geodesic.nC1p_ + 1): # l is index of C1p[l]
       m = (Geodesic.nC1p_ - l) // 2 # order of polynomial in eps^2
       c[l] = d * Math.polyval(m, coeff, o, eps2) / coeff[o + m + 1]
       o += m + 2
-      d *= eps
+      d *= self
   _C1pf = staticmethod(_C1pf)
 
-  def _A2m1f(eps):
+  def _A2m1f(self):
     """Private: return A2-1"""
     coeff = [
       -11, -28, -192, 0, 256,
     ]
     m = Geodesic.nA2_//2
-    t = Math.polyval(m, coeff, 0, Math.sq(eps)) / coeff[m + 1]
-    return (t - eps) / (1 + eps)
+    t = Math.polyval(m, coeff, 0, Math.sq(self)) / coeff[m + 1]
+    return (t - self) / (1 + self)
   _A2m1f = staticmethod(_A2m1f)
 
-  def _C2f(eps, c):
+  def _C2f(self, c):
     """Private: return C2"""
     coeff = [
       1, 2, 16, 32,
@@ -261,14 +258,14 @@ class Geodesic(object):
       63, 1280,
       77, 2048,
     ]
-    eps2 = Math.sq(eps)
-    d = eps
+    eps2 = Math.sq(self)
+    d = self
     o = 0
     for l in range(1, Geodesic.nC2_ + 1): # l is index of C2[l]
       m = (Geodesic.nC2_ - l) // 2        # order of polynomial in eps^2
       c[l] = d * Math.polyval(m, coeff, o, eps2) / coeff[o + m + 1]
       o += m + 2
-      d *= eps
+      d *= self
   _C2f = staticmethod(_C2f)
 
   def __init__(self, a, f):
@@ -329,11 +326,10 @@ class Geodesic(object):
       1, -1, 2,
       1, 1,
     ]
-    o = 0; k = 0
-    for j in range(Geodesic.nA3_ - 1, -1, -1): # coeff of eps^j
+    o = 0
+    for k, j in enumerate(range(Geodesic.nA3_ - 1, -1, -1)): # coeff of eps^j
       m = min(Geodesic.nA3_ - j - 1, j) # order of polynomial in n
       self._A3x[k] = Math.polyval(m, coeff, o, self._n) / coeff[o + m + 1]
-      k += 1
       o += m + 2
 
   def _C3coeff(self):
@@ -488,7 +484,8 @@ class Geodesic(object):
     # Return a starting point for Newton's method in salp1 and calp1 (function
     # value is -1).  If Newton's method doesn't need to be used, return also
     # salp2 and calp2 and function value is sig12.
-    sig12 = -1; salp2 = calp2 = dnm = Math.nan # Return values
+    sig12 = -1
+    salp2 = calp2 = dnm = Math.nan # Return values
     # bet12 = bet2 - bet1 in [0, pi); bet12a = bet2 + bet1 in (-pi, 0]
     sbet12 = sbet2 * cbet1 - cbet2 * sbet1
     cbet12 = cbet2 * cbet1 + sbet2 * sbet1
@@ -528,12 +525,8 @@ class Geodesic(object):
       salp2, calp2 = Math.norm(salp2, calp2)
       # Set return value
       sig12 = math.atan2(ssig12, csig12)
-    elif (abs(self._n) >= 0.1 or # Skip astroid calc if too eccentric
-          csig12 >= 0 or
-          ssig12 >= 6 * abs(self._n) * math.pi * Math.sq(cbet1)):
-      # Nothing to do, zeroth order spherical approximation is OK
-      pass
-    else:
+    elif (abs(self._n) < 0.1 and csig12 < 0
+          and ssig12 < 6 * abs(self._n) * math.pi * Math.sq(cbet1)):
       # Scale lam12 and bet2 to x, y coordinate system where antipodal point
       # is at origin and singular point is at y = 0, x = -1.
       # real y, lamscale, betscale
@@ -616,7 +609,7 @@ class Geodesic(object):
         salp1 = cbet2 * somg12
         calp1 = sbet12a - cbet2 * sbet1 * Math.sq(somg12) / (1 - comg12)
     # Sanity check on starting guess.  Backwards check allows NaN through.
-    if not (salp1 <= 0):
+    if salp1 > 0:
       salp1, calp1 = Math.norm(salp1, calp1)
     else:
       salp1 = 1; calp1 = 0

@@ -6,8 +6,7 @@ import numpy as np
 
 def ExampleValues():
     """ Returns example pose values of 3 points A, B and C in the world frame """
-    T = []
-    T.append(gtsam.Point3(np.array([3.14, 1.59, 2.65])))
+    T = [gtsam.Point3(np.array([3.14, 1.59, 2.65]))]
     T.append(gtsam.Point3(np.array([-1.0590e+00, -3.6017e-02, -1.5720e+00])))
     T.append(gtsam.Point3(np.array([8.5034e+00, 6.7499e+00, -3.6383e+00])))
 

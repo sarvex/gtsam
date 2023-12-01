@@ -33,10 +33,7 @@ def visual_ISAM2_plot(result):
     fignum = 0
 
     fig = plt.figure(fignum)
-    if not fig.axes:
-        axes = fig.add_subplot(projection='3d')
-    else:
-        axes = fig.axes[0]
+    axes = fig.add_subplot(projection='3d') if not fig.axes else fig.axes[0]
     plt.cla()
 
     # Plot points

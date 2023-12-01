@@ -108,8 +108,8 @@ def main():
     print('Optimizing:')
     result = optimizer.optimize()
     result.print('Final results:\n')
-    print('initial error = {}'.format(graph.error(initial_estimate)))
-    print('final error = {}'.format(graph.error(result)))
+    print(f'initial error = {graph.error(initial_estimate)}')
+    print(f'final error = {graph.error(result)}')
 
     marginals = Marginals(graph, result)
     plot.plot_3d_points(1, result, marginals=marginals)

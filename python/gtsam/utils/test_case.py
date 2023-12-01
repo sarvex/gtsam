@@ -28,8 +28,7 @@ class GtsamTestCase(unittest.TestCase):
         else:
             equal = actual.equals(expected, tol)
         if not equal:
-            raise self.failureException(
-                "Values are not equal:\n{}!={}".format(actual, expected))
+            raise self.failureException(f"Values are not equal:\n{actual}!={expected}")
 
     def assertEqualityOnPickleRoundtrip(self, obj: object, tol=1e-9) -> None:
         """ Performs a round-trip using pickle and asserts equality.

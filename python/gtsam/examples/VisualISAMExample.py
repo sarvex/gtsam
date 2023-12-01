@@ -91,7 +91,7 @@ def main():
             isam.update(graph, initial_estimate)
             current_estimate = isam.estimate()
             print('*' * 50)
-            print('Frame {}:'.format(i))
+            print(f'Frame {i}:')
             current_estimate.print('Current estimate: ')
 
             # Clear the factor graph and values for the next iteration
